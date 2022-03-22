@@ -35,6 +35,8 @@ class Login(APIView):
         if not user.check_password(password):
             error = LAKE_ERROR("INCORRECT_PASSWORD")
             return Response({"message": error.getMessage()}, status=error.getStatus())
+        
+        response = Response()
 
         payload = {
             'id': user.id,
@@ -42,6 +44,12 @@ class Login(APIView):
             'iat': datetime.datetime.utcnow()
         }
         token = jwt.encode(payload, 'secret', algorithm='HS256')
+
+        response.set_cookie(key='jwt', value=token, httponly=True)
+        response.data = {
+            "message": LAKE_ERROR("OK").getMessage(), 
+            "token": token}
+        response.status_code = LAKE_ERROR("OK").getStatus()
         # Passed all checks
-        return Response({"message": LAKE_ERROR("OK").getMessage(), "token": token}, status= LAKE_ERROR("OK").getStatus())
+        return response
 
