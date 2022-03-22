@@ -7,7 +7,7 @@ sudo docker run -dp 8000:8000 backend
 
 
 ## File Structure ##
-
+````
 backend/
 ├── backend ``` Default Django Configuration folder ```
 ├── config ``` Keep all configuration/error codes inside this folder ```
@@ -27,3 +27,4 @@ backend/
     ├── urls.py
     ├── views ``` Keep all views inside this folder ```
     └── views.py
+````
