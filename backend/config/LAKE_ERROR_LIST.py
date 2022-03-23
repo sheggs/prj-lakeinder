@@ -1,7 +1,10 @@
+# 301 = Token Expired
 HTTP_CODES = {
     "OK": {"status":200, "string":"SUCCESS"},
-    "INCORRECT_PASSWORD": {"status": 400, "string": "Incorrect password"},
-    "USER_UNDEFINED": {"status": 400, "string": "User does not exist"},
+    "INCORRECT_PASSWORD": {"status": 401, "string": "Incorrect password"},
+    "USER_UNDEFINED": {"status": 401, "string": "User does not exist"},
+    "TOKEN_ERROR": {"status": 401, "string": "Token does not exist"},
+
 }
 
 
