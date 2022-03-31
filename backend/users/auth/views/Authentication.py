@@ -2,7 +2,6 @@ from rest_framework.views import APIView
 from users.serializer import UserSerializer, TagsSerializer
 from users.models import User
 from config.utils import requiredFields, remove_duplicates
-
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -12,6 +11,9 @@ import datetime
 from config.LAKE_ERROR_LIST import LAKE_ERROR
 from users.auth.helper_functions import generateAuthToken, generateRefreshToken, decodeRefreshToken, decodeAuthToken
 
+# DO NOT DELETE
+from django.http import HttpResponse
+import json
 # For Debugging
 # Print does not work in django use https://www.delftstack.com/howto/django/django-print-to-console/
 import logging
@@ -116,12 +118,16 @@ class Login(APIView):
         if(refresh_token is None or token is None):
             error = LAKE_ERROR("USER_UNDEFINED")
             return Response({"message": error.getMessage()}, status=error.getStatus())
-        # Store refresh token inside cookies. This is used in the RefreshToken view
-        response.set_cookie(key='jwt', value=refresh_token, httponly=True)
+
         # Set reponse data that contains the accessToken
-        response.data = {
+        data_resp = {
             "message": LAKE_ERROR("OK").getMessage(), 
             'accessToken': token}
+        # Store refresh token inside cookies. This is used in the RefreshToken view
+        response = HttpResponse(json.dumps(data_resp), content_type="application/json")
+
+        response.set_cookie('jwt', refresh_token)
+
         # Set up response status code to 200 OK.
         response.status_code = LAKE_ERROR("OK").getStatus()
         # Passed all checks
@@ -133,6 +139,9 @@ class RefreshToken(APIView):
     def post(self, request):
         # Retrieve the refresh toke from the cookies
         token = request.COOKIES.get('jwt')
+        logging.debug("REFRESH-TOKEN")
+        logging.debug(token)
+
         # Initalise the payload (future use)
         payload = None
         # Is the cookies empty?
@@ -154,5 +163,23 @@ class RefreshToken(APIView):
         if (auth_token is None):
             error = LAKE_ERROR("USER_UNDEFINED")
             return Response({"message": error.getMessage()}, status=error.getStatus())
+        logging.debug("Ending")
+
         # Return the access token for front end.
         return Response({"message": LAKE_ERROR("OK").getMessage(), "accessToken": auth_token})
+
+
+class LogoutView(APIView):
+    # Retrieve the access token for front end
+    def get(self, request):
+        # Retrieve the refresh toke from the cookies
+        response = HttpResponse()
+        response.delete_cookie("jwt")
+        return response
+        # response = Response({"Cookie Gone": True})
+        # expires = datetime.datetime.utcnow() + datetime.timedelta(seconds=1)
+        # # response.delete_cookie(key='jwt',  path="/", domain="localhost")
+
+        response.set_cookie(key='jwt', value='', httponly=True, expires=1)
+        return response
+     
