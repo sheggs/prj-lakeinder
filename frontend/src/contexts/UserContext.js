@@ -18,7 +18,7 @@ export default function UserContextProvider(props) {
     if (error.response) {
       if (error.response.status == 401 ) {
         setAccessToken(null)
-        let r = await axios.post(baseURL+"/auth/refresh-token",{},{withCredentials:true})
+        let r = await axios.post(baseURL+"/auth/refresh_token",{},{withCredentials:true})
         if(r.data.accessToken == ""){
           // Session has expired
           history.push("/?sessionexpired")
@@ -49,7 +49,7 @@ export default function UserContextProvider(props) {
 
   let authenticated = false
 
-  // const refresh = failedRequest => axios_net.post(`${process.env.REACT_APP_HOST_NAME}/api/auth/refresh-token`, {rememberMe: localStorage.getItem("rememberMe")}, { withCredentials: true }).then(response => {
+  // const refresh = failedRequest => axios_net.post(`${process.env.REACT_APP_HOST_NAME}/api/auth/refresh_token`, {rememberMe: localStorage.getItem("rememberMe")}, { withCredentials: true }).then(response => {
   //     //console.log('Requesting refresh token')
   //     setAccessToken(response.data.token)
   //     failedRequest.response.config.headers['Authorization'] = 'Bearer ' + response.data.token
@@ -69,7 +69,7 @@ export default function UserContextProvider(props) {
     }
     try {
       //err checking!
-      const r = await axios.post("http://" + process.env.REACT_APP_BACKEND_NAME + "/auth/refresh-token", {}, { skipAuthRefresh: true, withCredentials: true })
+      const r = await axios.post("http://" + process.env.REACT_APP_BACKEND_NAME + "/auth/refresh_token", {}, { skipAuthRefresh: true, withCredentials: true })
       //console.log(r)
       // if (r.data.error) {
       //   setAccessToken(null)

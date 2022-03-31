@@ -14,7 +14,7 @@ import Minimal from './layout/Minimal';
 import Maximum from './layout/Maximum';
 import NoLayout from './layout/NoLayout';
 
-import {LoginPage, LogoutPage} from './views/LoginPage';
+import {IndexPage, LogoutPage} from './views/IndexPage';
 
 import Dashboard from './views/Dashboard';
 
@@ -27,7 +27,7 @@ export default () => {
 
     return(
         <Switch>
-            <RPRoute component={LoginPage} exact path="/"  layout={Minimal} public/>
+            <RPRoute component={IndexPage} exact path="/"  layout={Minimal} public/>
             <RPRoute component={LogoutPage} exact path="/logout"  layout={Minimal} public/>
 
             <RPRoute component={Dashboard} exact path="/dashboard" layout={Maximum} private />

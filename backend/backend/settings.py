@@ -22,15 +22,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-p6!nw9p5k=jbe$wp+54q+o@$gz)k-r3hwkf83v+grc67h&)r-r'
 
+
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # PIP INSTALLED APPS
     'rest_framework',
-    'corsheaders',
     # LAKEINDER APPS
     'users',
 ]
@@ -134,5 +134,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 
-CORSE_ORIGIN_ALLOW_ALL = True
-CORSE_ALLOW_CREDENTIALS = True
+
+'''
+    CORS SETTINGS
+'''
+ALLOWED_HOSTS=['*']
+CORS_ALLOWED_ORIGINS = ['http://*']
+CORS_ORIGIN_WHITELIST = ['http://*']                 # For cors before 3.0.0
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True

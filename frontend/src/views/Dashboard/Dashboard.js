@@ -41,14 +41,11 @@ export default function Dashboard(props) {
   const [frontPageURIs, setFrontPageURIs] = useState([{}]);
   const [loading, setLoading] = useState(0);
   setSection("Dashboard")
-  if(loading == 0){
-    return <Loading />
-  }
   return (
     <React.Fragment>
       <Paper className={classes.paperMain} elevation={0}>  
-
-      <Grid
+      <h1>Dashboard..</h1>
+      {/* <Grid
         container
         direction="row"
         justify="space-around"
@@ -70,7 +67,7 @@ export default function Dashboard(props) {
           
         )}
 
-      </Grid>
+      </Grid> */}
     </Paper>
     </React.Fragment>
   )

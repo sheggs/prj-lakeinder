@@ -17,6 +17,7 @@ import MuiAlert from '@material-ui/lab/Alert';
 import { UserContext } from '../../contexts/UserContext'
 import { useForm } from 'react-hook-form'
 import Container from '@material-ui/core/Container';
+import LoginModal from './LoginModal'
 //import axios_net from '../../extras/axios_net'
 const useStyles = makeStyles((theme) => ({
   gridContainer: {
@@ -128,7 +129,13 @@ export default function LoginPage(props) {
     // })
   }
 
-
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const loginOpen = () => {
+    setShowLoginModal(true)
+  }
+  const loginOnClose = () => {
+    setShowLoginModal(false)
+  }
   //console.log(props.location.search)
 
   return (
@@ -149,13 +156,13 @@ export default function LoginPage(props) {
               </Typography>
           </Grid>
           <Grid item xs={12}>
-           <Button fullWidth className={classes.signInButtonStyle} color="black" variant="contained"  onClick={() => { alert('clicked') }}>Login</Button>
+           <Button fullWidth className={classes.signInButtonStyle} color="black" variant="contained"  onClick={() => { loginOpen() }}>Login</Button>
           </Grid>
         <Grid item xs={12}>
           <Button fullWidth className={classes.registerButton} variant="contained"  onClick={() => { alert('clicked') }}>Register a new account</Button>
           </Grid>
         </Grid>
-
+        <LoginModal show={showLoginModal} onClose={loginOnClose} />
         {/* <CssBaseline />
         <div className={classes.paper}>
           <Avatar color="primary" className={classes.avatar}>
