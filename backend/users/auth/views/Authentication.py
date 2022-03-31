@@ -1,17 +1,20 @@
 from rest_framework.views import APIView
-from users.serializer import UserSerializer
+from users.serializer import UserSerializer, TagsSerializer
+from users.models import User
+from config.utils import requiredFields, remove_duplicates
+
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
-from users.models import User
+
 from config.config import REFRESH_SECRET, SECRET
 import jwt
 import datetime
-import logging
 from config.LAKE_ERROR_LIST import LAKE_ERROR
 from users.auth.helper_functions import generateAuthToken, generateRefreshToken, decodeRefreshToken, decodeAuthToken
 
 # For Debugging
 # Print does not work in django use https://www.delftstack.com/howto/django/django-print-to-console/
+import logging
 logging.basicConfig(level=logging.NOTSET) # Here
 
 
@@ -33,11 +36,57 @@ class Register(APIView):
     # Post Register Request
     def post(self, request):
         # Convert the JSON input data into a serial model object
+
+        # pop data...
+        # Extra Required Fields. Not including user fields...
+        resp, code = requiredFields(["tags"], request.data)
+
+
+        if(resp):
+            return Response(resp, status=code)
+        
+        
+        tags = request.data["tags"]
+        tags = remove_duplicates(tags)
+        logging.debug(tags)
+        del request.data["tags"]
+
+        '''
+            @TODO
+            request.data
+            Remove images from this
+            image1, image2, image3, images4
+            Then pass these images to fileservices
+            then replace the data inside the fields image1 = [URL OF IMAGE SERVICE..]
+
+            EG
+            request.data["image1"] = BINARY DATA.. ... ..
+            IDSerivce = uploadToFileServices(reqest.data["image1"])
+            ^^ Should contain an image id from FileSErvices
+            SET request.data["image1"] = IMAGE_ID from file services
+        '''
         serializer = UserSerializer(data=request.data)
+
         # Check if the fields are all valid
         serializer.is_valid(raise_exception=True)
         # Save the object into the db.
         serializer.save()
+        logging.debug(serializer)
+
+
+        user_id = serializer.data["id"]
+        logging.debug(user_id)
+        logging.debug("asdasd")
+
+        for i in tags:
+            data = {
+                "user": user_id,
+                "tag": i
+            }
+            logging.debug(data)
+            tagSerializer = TagsSerializer(data=data)
+            tagSerializer.is_valid(raise_exception=True)
+            tagSerializer.save()
         return Response(serializer.data)
 
 # Login View
@@ -70,11 +119,9 @@ class Login(APIView):
         # Store refresh token inside cookies. This is used in the RefreshToken view
         response.set_cookie(key='jwt', value=refresh_token, httponly=True)
         # Set reponse data that contains the accessToken
-        header = request.META['HTTP_AUTHORIZATION']
         response.data = {
             "message": LAKE_ERROR("OK").getMessage(), 
-            'accessToken': token,
-            "header": header}
+            'accessToken': token}
         # Set up response status code to 200 OK.
         response.status_code = LAKE_ERROR("OK").getStatus()
         # Passed all checks
