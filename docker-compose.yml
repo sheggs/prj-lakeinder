@@ -1,0 +1,12 @@
+# To be tested and completed
+version: '3'
+services: 
+    backend:
+        build: ./backend
+        volumes:
+            - ./backend:/code
+        ports: 
+            - 8000:8000
+        
+            
+    
