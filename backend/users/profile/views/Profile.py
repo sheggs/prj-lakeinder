@@ -8,6 +8,7 @@ import jwt
 import datetime
 import json
 from config.LAKE_ERROR_LIST import LAKE_ERROR
+import sys, os
 # View to get your own profile
 # For Debugging
 # Print does not work in django use https://www.delftstack.com/howto/django/django-print-to-console/
@@ -60,5 +61,3 @@ class UserProfile(APIView):
         logging.debug("POST")
         logging.debug(request.body)
         return self.view("POST", request)
-
-

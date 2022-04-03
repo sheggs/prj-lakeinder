@@ -12,7 +12,8 @@ class TestUserModel(TestCase):
             "first_name": "John",
             "last_name": "Adams",
             "email": "test@test.com",
-            "password": "password,"
+            "password": "password",
+            "sex": 1
         }
 
         serializer = UserSerializer(data=register)
@@ -25,6 +26,7 @@ class TestUserModel(TestCase):
         self.assertEquals(user.email, register["email"])
         self.assertEquals(user.first_name, register["first_name"])
         self.assertEquals(user.last_name, register["last_name"])
+        self.assertEquals(user.sex, register["sex"])
     '''
         @brief This is a test that validates the auth token generation.
     '''        
@@ -33,7 +35,8 @@ class TestUserModel(TestCase):
             "first_name": "John",
             "last_name": "Adams",
             "email": "test@test.com",
-            "password": "password,"
+            "password": "password",
+            "sex": 1
         }
         serializer = UserSerializer(data=register)
         # Check if the fields are all valid
@@ -51,7 +54,8 @@ class TestUserModel(TestCase):
             "first_name": "John",
             "last_name": "Adams",
             "email": "test@test.com",
-            "password": "password,"
+            "password": "password",
+            "sex": 1
         }
         serializer = UserSerializer(data=register)
         # Check if the fields are all valid
