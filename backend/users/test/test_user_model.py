@@ -28,7 +28,16 @@ class TestUserModel(TestCase):
         self.assertEquals(user.first_name, register["first_name"])
         self.assertEquals(user.last_name, register["last_name"])
         self.assertEquals(user.sex, register["sex"])
-        self.assertEquals(user.sex, register["date_of_birth"])
+        self.assertEquals(user.date_of_birth, register["date_of_birth"])
+
+        # check if the stored date_of_birth equals 18 years old - SHOULD THIS BE IN ITS OWN FUNCTION?
+        user_age = date.today() - user.date_of_birth.days / 365
+        if user_age > 18:
+            is_18_or_older = True
+        else:
+            is_18_or_older = False
+        self.assertTrue(is_18_or_older)
+
     '''
         @brief This is a test that validates the auth token generation.
     '''        
