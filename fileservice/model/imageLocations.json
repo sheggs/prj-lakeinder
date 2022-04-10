@@ -1,0 +1,22 @@
+[
+     {
+          "id": 1,
+          "image_file_location": "images\\img1.jpg"
+     },
+     {
+          "id": 2,
+          "image_file_location": "images\\Test_Image.jpg"
+     },
+     {
+          "id": 3,
+          "image_file_location": "images\\test_image_2.jpg"
+     },
+     {
+          "id": 4,
+          "image_file_location": "images\\test_image_3.jpg"
+     },
+     {
+          "id": 5,
+          "image_file_location": "images\\test_image_4.jpg"
+     }
+]
