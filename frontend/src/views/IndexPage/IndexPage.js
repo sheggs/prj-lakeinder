@@ -13,11 +13,13 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Snackbar from '@material-ui/core/Snackbar';
-import MuiAlert from '@material-ui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import { UserContext } from '../../contexts/UserContext'
 import { useForm } from 'react-hook-form'
 import Container from '@material-ui/core/Container';
-import LoginModal from './LoginModal'
+import LoginModal from './LoginModal';
+import RegisterModal from './RegisterModal';
+
 //import axios_net from '../../extras/axios_net'
 const useStyles = makeStyles((theme) => ({
   gridContainer: {
@@ -34,14 +36,14 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '1.8rem',
     fontWeight: 1000
   },
-  footer:{
-    position:"fixed",
+  footer: {
+    position: "fixed",
     width: "100vw",
-    textAlign:"center",
-    bottom:0
+    textAlign: "center",
+    bottom: 0
   },
-  signInButtonStyle:{
-    height:"5vh",
+  signInButtonStyle: {
+    height: "5vh",
     width: "20vw",
     color: 'white',
     borderRadius: 30,
@@ -51,8 +53,8 @@ const useStyles = makeStyles((theme) => ({
     }
 
   },
-  registerButton:{
-    height:"5vh",
+  registerButton: {
+    height: "5vh",
     color: 'white',
     width: "20vw",
     borderRadius: 30,
@@ -89,13 +91,14 @@ const useStyles = makeStyles((theme) => ({
   // },
 }));
 
-function Alert(props) {
-  return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
+
 
 export default function LoginPage(props) {
   const { axios_net, setAccessToken, accessToken } = useContext(UserContext)
   const classes = useStyles()
+
+  
+
   const [open, setOpen] = React.useState(false);
   const [error_msg, seterr_msg] = React.useState("");
   const [sev, setSev] = React.useState("error")
@@ -128,102 +131,63 @@ export default function LoginPage(props) {
     //   setOpen(true)
     // })
   }
-
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showRegisterModal, setShowRegisterModal] = useState(false)
   const loginOpen = () => {
     setShowLoginModal(true)
   }
+  const registerOpen = () => {
+    setShowRegisterModal(true)
+  }
   const loginOnClose = () => {
     setShowLoginModal(false)
+  }
+  const registerOnClose = (reason) => {
+    if (reason == "registered") {
+      seterr_msg("Registered succesfully please login.")
+      setSev("success")
+      setOpen(true)
+      setShowRegisterModal(false)
+    }
+    setShowRegisterModal(false)
   }
   //console.log(props.location.search)
 
   return (
     <div >
-        <Grid
-        className = {classes.gridContainer}
-          container
-          spacing={10}
-          direction="column"
-          alignItems="center"
-          justify="center"
-        // style={{ width: '100vw' }}
-        >
+      <Grid
+        className={classes.gridContainer}
+        container
+        spacing={10}
+        direction="column"
+        alignItems="center"
+        justify="center"
+      // style={{ width: '100vw' }}
+      >
 
-          <Grid item xs={12}>
-            <Typography variant="h6" className={classes.welcomemessage}>
+        <Grid item xs={12}>
+          <Typography variant="h6" className={classes.welcomemessage}>
             Welcome! How do you want to get started?
               </Typography>
-          </Grid>
-          <Grid item xs={12}>
-           <Button fullWidth className={classes.signInButtonStyle} color="black" variant="contained"  onClick={() => { loginOpen() }}>Login</Button>
-          </Grid>
-        <Grid item xs={12}>
-          <Button fullWidth className={classes.registerButton} variant="contained"  onClick={() => { alert('clicked') }}>Register a new account</Button>
-          </Grid>
         </Grid>
-        <LoginModal show={showLoginModal} onClose={loginOnClose} />
-        {/* <CssBaseline />
-        <div className={classes.paper}>
-          <Avatar color="primary" className={classes.avatar}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component="h1" variant="h5">
-            Sign in
-          </Typography>
-          <form className={classes.form} noValidate onSubmit={handleSubmit(onSubmit)}>
-            <TextField
-              inputRef={register({ required: true })}
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              id="Username"
-              defaultValue={""}
-              label="Username"
-              name="username"
-              autoFocus
-            />
-            <TextField
-              inputRef={register({ required: true })}
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-            />
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              // color=""
-              className={classes.submit}
-            >
-              Sign In
-            </Button>
+        <Grid item xs={12}>
+          <Button fullWidth className={classes.signInButtonStyle} color="black" variant="contained" onClick={() => { loginOpen() }}>Login</Button>
+        </Grid>
+        <Grid item xs={12}>
+          <Button fullWidth className={classes.registerButton} variant="contained" onClick={() => { registerOpen() }}>Register a new account</Button>
+        </Grid>
+      </Grid>
+      <RegisterModal show={showRegisterModal} onClose={registerOnClose} />
+      <LoginModal show={showLoginModal} onClose={loginOnClose} />
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity={sev}>
+          {error_msg}
+        </Alert>
+      </Snackbar>
 
-          </form>
-          <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-            <Alert onClose={handleClose} severity={sev}>
-              {error_msg}
-            </Alert>
-          </Snackbar>
-        </div>
-        <Box mt={8}>
-        </Box> */}
-
-        <footer className={classes.footer}>
-          <p>{"Match with your Lake bae here <3"}</p>
-        </footer>
+      <footer className={classes.footer}>
+        <p>{"Match with your Lake bae here <3"}</p>
+      </footer>
     </div>
   )
 }

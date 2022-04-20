@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'rest_framework',
     # LAKEINDER APPS
     'users',
+    'static',
+    # 'fileconnector'
 ]
 
 

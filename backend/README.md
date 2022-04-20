@@ -28,3 +28,14 @@ backend/
     ├── views ``` Keep all views inside this folder ```
     └── views.py
 ````
+
+## How to preform Authentication using JWT ##
+
+```
+        from users.auth.helper_functions import decodeAuthToken
+        # Authentication
+        payload = decodeAuthToken(request.META.get('HTTP_AUTHORIZATION'))
+        if payload == None:
+            err = LAKE_ERROR("TOKEN_ERROR")
+            return Response({"message": err.getMessage()}, status=err.getStatus())
+```

@@ -41,6 +41,7 @@ class Register(APIView):
 
         # pop data...
         # Extra Required Fields. Not including user fields...
+        logging.debug(request.data)
         resp, code = requiredFields(["tags"], request.data)
 
 
