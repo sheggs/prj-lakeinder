@@ -12,7 +12,9 @@ class TestUserModel(TestCase):
             "first_name": "John",
             "last_name": "Adams",
             "email": "test@test.com",
-            "password": "password,"
+            "password": "password",
+            "sex": 1
+            "date_of_birth": "2001-03-22"
         }
 
         serializer = UserSerializer(data=register)
@@ -25,6 +27,17 @@ class TestUserModel(TestCase):
         self.assertEquals(user.email, register["email"])
         self.assertEquals(user.first_name, register["first_name"])
         self.assertEquals(user.last_name, register["last_name"])
+        self.assertEquals(user.sex, register["sex"])
+        self.assertEquals(user.date_of_birth, register["date_of_birth"])
+
+        # check if the stored date_of_birth equals 18 years old - SHOULD THIS BE IN ITS OWN FUNCTION?
+        user_age = date.today() - user.date_of_birth.days / 365
+        if user_age > 18:
+            is_18_or_older = True
+        else:
+            is_18_or_older = False
+        self.assertTrue(is_18_or_older)
+
     '''
         @brief This is a test that validates the auth token generation.
     '''        
@@ -33,7 +46,9 @@ class TestUserModel(TestCase):
             "first_name": "John",
             "last_name": "Adams",
             "email": "test@test.com",
-            "password": "password,"
+            "password": "password",
+            "sex": 1
+            "date_of_birth": "2001-03-22"
         }
         serializer = UserSerializer(data=register)
         # Check if the fields are all valid
@@ -51,7 +66,9 @@ class TestUserModel(TestCase):
             "first_name": "John",
             "last_name": "Adams",
             "email": "test@test.com",
-            "password": "password,"
+            "password": "password",
+            "sex": 1
+            "date_of_birth": "2001-03-22"
         }
         serializer = UserSerializer(data=register)
         # Check if the fields are all valid
