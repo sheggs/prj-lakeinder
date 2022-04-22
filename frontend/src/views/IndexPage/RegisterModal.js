@@ -117,17 +117,23 @@ export default function RegisterModal(props) {
     const [countryList, setCountryList] = useState(undefined)
     const [world_list, set_world_list] = useState({})
     const [cityList, setCityList] = useState([])
+    const [gender, setGender] = useState("Male")
+
+    const onGenderChange = (e) => {
+        console.log(e.target.value)
+        setGender(e.target.value)
+    }
     // Load country data
-    useEffect( () => {
+    useEffect(() => {
         let isSubscribed = true
         axios_net.get("statics/world_cities").then((r) => {
-            if(isSubscribed){
+            if (isSubscribed) {
                 setCountryList(Object.keys(r.data).sort())
                 set_world_list(r.data)
             }
-         
-        }).catch((e)=> {
-            if(isSubscribed){
+
+        }).catch((e) => {
+            if (isSubscribed) {
                 setCountryList(null)
             }
         })
@@ -135,7 +141,7 @@ export default function RegisterModal(props) {
             isSubscribed = false
         }
     }, [])
-  
+
     const classes = useStyles()
     const [open, setOpen] = React.useState(false);
     const [error_msg, seterr_msg] = React.useState("");
@@ -189,7 +195,7 @@ export default function RegisterModal(props) {
         return false
     }
 
-   
+
 
 
 
@@ -211,8 +217,13 @@ export default function RegisterModal(props) {
         d.first_name = event.first_name
         d.last_name = event.last_name
         d.email = event.email
-        d.dateofbirth = event.dateofbirth
+        d.date_of_birth = new Date(event.dateofbirth).toISOString().split('T')[0]
         d.password = password
+        if(gender == "Male"){
+            d.sex = 2
+        }else{
+            d.sex = 1
+        }
         setData(d)
         setStep(1)
 
@@ -231,12 +242,12 @@ export default function RegisterModal(props) {
         setCountry(e.target.value)
         let d = world_list[e.target.value]
         let c = []
-        for(let i in d){
+        for (let i in d) {
             c.push(d[i].City)
         }
         setCityList(c.sort())
 
-        
+
     }
     const onCitySelectChange = (e) => {
         setCity(e.target.value)
@@ -285,14 +296,14 @@ export default function RegisterModal(props) {
         axios_net.post("auth/register", cpy, { skipAuthRefresh: true, withCredentials: true }).then((r) => {
             props.onClose("registered")
         }).catch((e) => {
-            if(e.response.status){
-                if(Object.keys(e.response.data).includes("email")){
+            if (e.response.status) {
+                if (Object.keys(e.response.data).includes("email")) {
                     seterr_msg(e.response.data.email)
                     setSev("error")
                     setOpen(true)
                     return
                 }
-                if(Object.keys(e.response.data).includes("message")){
+                if (Object.keys(e.response.data).includes("message")) {
                     seterr_msg(e.response.data.message)
                     setSev("error")
                     setOpen(true)
@@ -397,6 +408,29 @@ export default function RegisterModal(props) {
                     {countryList != undefined && <React.Fragment>
                         <form onSubmit={handleSubmit(registerSubmitPhase1)}>
                             <div class={classes.fieldContainer}>
+                                <FormControl className={classes.padFields} name="city" fullWidth >
+                                    <InputLabel htmlFor="city">
+                                        Gender
+                                    </InputLabel>
+                                    <Select
+                                        id="gender"
+                                        fullWidth
+                                        inputRef={register({ required: true })}
+                                        onChange={onGenderChange}
+                                        name="city"
+                                        defaultValue={gender == undefined ? "" : gender}
+
+                                        variant="outlined"
+                                        error={errors.gender ? true : false}
+                                    >
+                                        <MenuItem key={"Male"} value={"Male"}>
+                                            {"Male"}
+                                        </MenuItem>
+                                        <MenuItem key={"Female"} value={"Female"}>
+                                            {"Female"}
+                                        </MenuItem>
+                                    </Select>
+                                </FormControl>
                                 <TextField
                                     inputRef={register({ required: true })}
                                     variant="outlined"
@@ -611,16 +645,16 @@ export default function RegisterModal(props) {
                 {step == 2 && <React.Fragment>
                     <div class={classes.fieldContainer}>
 
-                    <Grid
+                        <Grid
                             container
                             direction="row"
                             spacing={3}
                             className={classes.ContainerPush}
                         >
-                        {listOfChips.map((v, k) => (
-                            // <Button color={"primary"} variant={isSelected(v.name, tags) ? "contained" : "outlined"} onClick={() => { handleChipClick(v.name) }} >{v.name}</Button>
-                            <Grid item xs={3}><Chip avatar={v.icon} label={v.name} color={isSelected(v.name, tags)  == false ? "secondary" : "primary"} onClick={() => { handleChipClick(v.name) }} /></Grid>
-                        ))}
+                            {listOfChips.map((v, k) => (
+                                // <Button color={"primary"} variant={isSelected(v.name, tags) ? "contained" : "outlined"} onClick={() => { handleChipClick(v.name) }} >{v.name}</Button>
+                                <Grid item xs={3}><Chip avatar={v.icon} label={v.name} color={isSelected(v.name, tags) == false ? "secondary" : "primary"} onClick={() => { handleChipClick(v.name) }} /></Grid>
+                            ))}
                         </Grid>
 
                         <Grid
@@ -631,13 +665,13 @@ export default function RegisterModal(props) {
                             className={classes.ContainerPush}
                         >
                             Selected {tags.length} tags
-                        </Grid>  
+                        </Grid>
                         <Fab className={classes.fab} variant="extended" type="submit" color="primary" aria-label="add" onClick={finalSubmit} >
-                                    <ArrowForwardIosIcon />
+                            <ArrowForwardIosIcon />
                                     NEXT
                                 </Fab>
-                                <Fab className={classes.fab} variant="extended" onClick={() => { setStep(1) }} color="primary" aria-label="add">
-                                    <ArrowBackIosIcon />
+                        <Fab className={classes.fab} variant="extended" onClick={() => { setStep(1) }} color="primary" aria-label="add">
+                            <ArrowBackIosIcon />
                                     BACK
                                 </Fab>
                     </div>

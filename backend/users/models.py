@@ -7,9 +7,9 @@ from datetime import date
 class User(AbstractUser):
     # don't know if we want these validators here or somewhere else feel free to move/remove
     def validate_sex(sex):
-        if (sex != 0) or (sex != 1) or (sex != 2) or (sex != 9):
+        if (sex != 0) and (sex != 1) and (sex != 2) and (sex != 9):
             raise ValidationError(
-                _('%(sex)s is not a valid sex.'),
+                ('%(sex)s is not a valid sex.'),
                 params={'sex': sex},
             )
     
@@ -17,7 +17,7 @@ class User(AbstractUser):
         age = (date.today() - date_of_birth).days / 365
         if age < 18:
             raise ValidationError(
-                _('%(date_of_birth)s is too young.'),
+                ('%(date_of_birth)s is too young.'),
                 params={'date_of_birth': date_of_birth},
             )
         

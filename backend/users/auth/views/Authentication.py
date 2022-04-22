@@ -46,8 +46,8 @@ class Register(APIView):
 
         if(resp):
             return Response(resp, status=code)
-        
-        
+        logging.debug(request.data)
+        request.data["sex"] = int(request.data["sex"])
         tags = request.data["tags"]
         tags = remove_duplicates(tags)
         logging.debug(tags)
