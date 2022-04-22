@@ -43,6 +43,32 @@ class SelfUserProfile(APIView):
 class UserProfile(APIView):
     def view(self, _type, request):
 
+
+        # # Authentication
+        # payload = decodeAuthToken(request.META.get('HTTP_AUTHORIZATION'))
+        # if payload == None:
+        #     err = LAKE_ERROR("TOKEN_ERROR")
+        #     return Response({"message": err.getMessage()}, status=err.getStatus())
+        # user_id = payload["id"]
+        # user = User.objects.filter(id=user_id).first()
+        # if user == None:
+        #     err = LAKE_ERROR("USER_UNDEFINED")
+        #     return Response({"message": err.getMessage()}, status=err.getStatus())
+        # _userserializer = UserSerializer(user)
+        # data = _userserializer.data
+
+        # ## Get all the user tags
+        # data["tags"] =user.get_user_tags()
+        
+        
+        # return Response(data)
+
+
+        payload = decodeAuthToken(request.META.get('HTTP_AUTHORIZATION'))
+        if payload == None:
+            err = LAKE_ERROR("TOKEN_ERROR")
+            return Response({"message": err.getMessage()}, status=err.getStatus())
+
         search_id = None
         req_bod = None
         if(_type == "GET"):
@@ -52,9 +78,20 @@ class UserProfile(APIView):
             if(type(request.body) == bytes):
                 body = json.loads(body)
             search_id = body["id"]
-        logging.debug(search_id)
+        user = User.objects.filter(id=search_id).first()
 
-        return Response({"msg":"msg"})
+        if user == None:
+            err = LAKE_ERROR("USER_UNDEFINED")
+            return Response({"message": err.getMessage()}, status=err.getStatus())
+        _userserializer = UserSerializer(user)
+        data = _userserializer.data
+
+        ## Get all the user tags
+        data["tags"] =user.get_user_tags()
+        
+        
+        return Response(data)      
+        
     def get(self, request):
         return self.view("GET", request)
     def post(self, request):

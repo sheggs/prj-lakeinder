@@ -28,7 +28,9 @@ class User(AbstractUser):
     # ISO/IEC 5218 says: 0 = not known, 1 = male, 2 = female, 9 = not applicable/other
     sex = models.IntegerField(default = 0, editable =  True, validators = [validate_sex])
     date_of_birth = models.DateField(validators = [validate_is_of_age])
-    
+    image1 = models.TextField()
+    image2 = models.TextField()
+    image3 = models.TextField()
     # TODO: ADD URLS FOR ACCOUNTS
     # 3-4 Images Links?
 
