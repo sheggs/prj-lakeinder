@@ -8,7 +8,7 @@ const multer = require('multer');
 
 const path = require('path');
 const fs = require('fs')
-const fsPromises = require('fs').promises;
+const fsPromises = fs.promises;
 
 const filePath = path.join(__dirname, '..', 'model', 'imageLocations.json')
 
@@ -17,7 +17,18 @@ const storage = multer.diskStorage({
         cb(null, './images/');
     },
     filename: function(req, file, cb) {
-        cb(null, file.originalname);
+        let ts = Date.now();
+
+        let date_time = new Date(ts);
+        let date = date_time.getDate();
+        let month = date_time.getMonth() + 1;
+        let year = date_time.getFullYear();
+
+        let hours = date_time.getHours();
+        let minutes = date_time.getMinutes();
+        let seconds = date_time.getSeconds();
+        year + "-" + month + "-" + date + " " + hours + ":" + minutes + ":" + seconds
+        cb(null,  year + "-" + month + "-" + date + " " + hours + "hrs-" + minutes + "min-" + seconds + "secs_" + file.originalname);
     } 
 })
 
@@ -26,48 +37,37 @@ const upload = multer({storage: storage});
 const express = require('express');
 const router = express.Router();
 
+const {getImage, _} = require('../controllers/imageController');
+
 router.route('/:id').get( (req, res, next) => {
-    console.log("Get /id Image:", req.params.id, data.images.find(emp => emp.id === parseInt(req.params.id)));
-    const image = data.images.find(img => img.id === parseInt(req.params.id));
-    if (!image) {
-        return res.status(400).json({"message": `Image ID ${req.params.id} not found`});
-    }
-    console.log(image);
-    console.log(typeof image.image_file_location)
-    res.sendFile(path.resolve(image.image_file_location));
+    getImage(req, res);
 });
 
-router.route('/').post(upload.single('productImage'), (req, res, next) => {
-    console.log(req.file, "checking", req.file.path);
+router.route('/').post(upload.single('image'), async (req, res, next) => {
     let startingID = 1;
     if (data.images.length >= 1) {
         startingID = data.images[data.images.length -1].id + 1
+    }
+
+    if (!req.file) {
+        return res.status(400).json({'message': `Image file required`});
     }
     const newImage = {
         id: startingID,
         image_file_location: req.file.path
     }
 
-    console.log(newImage)
-
-    if (!newImage.image_file_location) {
-        return res.status(400).json({'message': `Image file required`});
-    }
-    const duplicate = data.images.find(img => img.image_file_location === newImage.image_file_location);
-    if (duplicate) return res.sendStatus(409); // conflict
-
     data.setImages([...data.images, newImage]);
     const dataString = JSON.stringify(data.images, null, 5);
-    fs.writeFile(filePath, dataString, 'utf8', (err) => {
-        if (err) {
-          console.log(err);
-          res.status(500).json(err);
-        } else {
-          console.log("File written successfully\n");
-          console.log(data);
-          res.status(201).json(newImage.id);
-        }
-      });
+     try {
+        await fsPromises.writeFile(filePath, dataString, 'utf8');
+        console.log("File written successfully\n");
+        console.log(data);
+        res.status(201).json(newImage.id);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json(err);
+    }
 });
 
 

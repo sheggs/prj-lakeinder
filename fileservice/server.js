@@ -1,11 +1,15 @@
 const express = require('express');
-const app = express();
 const path = require('path');
 // const cookieParser = require('cookie-parser');
 // const cridentials = require('./middleware/cridentials');
 
 const PORT = process.env.PORT || 3500;
 
+
+
+function createServer() {
+
+const app = express();
 // // custom middleware logger
 // app.use(logger);
 
@@ -42,4 +46,15 @@ app.all('/*', (req, res) => {
 
 // app.use(errorHandler)
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+return app
+
+}
+
+
+const app = createServer();
+app.listen(PORT, () => {
+   console.log(`Server running on port ${PORT}`) 
+});
+
+
+module.exports = {createServer};
