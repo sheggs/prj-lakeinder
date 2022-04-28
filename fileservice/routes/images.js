@@ -1,9 +1,3 @@
-
-
-const data = {
-    images: require('../model/imageLocations.json'),
-    setImages: function (data) { this.images = data }
-}
 const multer = require('multer');
 
 const path = require('path');
@@ -40,10 +34,18 @@ const router = express.Router();
 const {getImage, _} = require('../controllers/imageController');
 
 router.route('/:id').get( (req, res, next) => {
+    let data = {
+        images: require('../model/imageLocations.json'),
+        setImages: function (data) { this.images = data }
+    }
     getImage(req, res);
 });
 
 router.route('/').post(upload.single('image'), async (req, res, next) => {
+    let data = {
+        images: require('../model/imageLocations.json'),
+        setImages: function (data) { this.images = data }
+    }
     let startingID = 1;
     if (data.images.length >= 1) {
         startingID = data.images[data.images.length -1].id + 1
