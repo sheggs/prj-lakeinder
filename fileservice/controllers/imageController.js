@@ -30,6 +30,7 @@ const getImage = async (req, res) => {
 
 
         const originalImage = path.resolve(image.image_file_location);
+        const extensionName = path.extname(image.image_file_location);
 
             try {
                 await sharp(originalImage)
@@ -37,7 +38,7 @@ const getImage = async (req, res) => {
                 width: width,
                 height: height,
             })
-            .toFile(path.resolve("resizedImage", "resizedImage.jpg"));
+            .toFile(path.resolve("resizedImage", "resizedImage"+extensionName));
       
           console.log("Successfully resized an image!");
         } catch (err) {
@@ -45,7 +46,7 @@ const getImage = async (req, res) => {
           return res.status(501).json("Can't resize image");
         }
 
-    res.sendFile(path.resolve("resizedImage", "resizedImage.jpg"));
+    res.sendFile(path.resolve("resizedImage", "resizedImage"+extensionName));
     }
     else {
         res.sendFile(path.resolve(image.image_file_location));
