@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken')
 
 const auth = async(req, res, next) => {
     if(req.header('Authorization')){
-        console.log("HERE")
         const token = req.header('Authorization').replace('Bearer ', '')
         let data = ""
         try{
@@ -12,11 +11,11 @@ const auth = async(req, res, next) => {
             req.user = jwt.decode(req.headers.authorization, KEY)
             next()
         }catch(e){
-            res.send({ message: 'Not authorized to access this resource' })
+            res.status(401).send({ message: 'Not authorized to access this resource' })
             return
         }
     }else{
-        res.send({ message: 'Not authorized to access this resource' })
+        res.status(401).send({ message: 'Not authorized to access this resource' })
         return
     }
 

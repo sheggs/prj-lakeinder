@@ -163,19 +163,45 @@ export default function Dashboard(props) {
       messageHistory: []
     }
   ]
-
+  const getNextProfile = () => {
+    setMatchProfile("loading")
+    lakeinder_core_axios.get("profile/", { headers: { Authorization: accessToken } }).then((resp) => {
+      setMatchProfile(resp.data)
+      if (Object.keys(resp.data).length == 0) {
+        setMatchProfile(undefined)
+      }
+    })
+  }
 
   const [matchProfile, setMatchProfile] = useState({})
+  const matchService = (profile, match) => {
+    if(profile == undefined){
+      return
+    }
+    let id = profile.id
+    lakeinder_core_axios.post("profile/match", { id: id, match: match }, { headers: { Authorization: accessToken } }).then((resp) => {
+      if(match == false){
+        snackBar("</3", "error")
+      }else{
+        snackBar("<3", "success")
+      }
+      getNextProfile()
+    }).catch((e) => {
+      snackBar("Cannot match. System error", "error")
+    })
+
+  }
   // Load country data
   useEffect(() => {
     let isSubscribed = true
-
+    console.log("HEY")
 
     axios_net.get("profile/me", { headers: { Authorization: accessToken } }).then((r) => {
       console.log("HERE?")
       if (isSubscribed) {
         lakeinder_core_axios.get("profile/", { headers: { Authorization: accessToken } }).then((resp) => {
           setMatchProfile(resp.data)
+          console.log(Object.keys(resp.data))
           if (Object.keys(resp.data).length == 0) {
             setMatchProfile(undefined)
           }
@@ -261,12 +287,21 @@ export default function Dashboard(props) {
                 </IconButton>
               </Grid>
               <Grid item xs={6}>
-                {matchProfile != undefined && <React.Fragment>
+                {matchProfile == "loading" && <React.Fragment>
+                  <Card sx={{}}>
+              
+                    <CardContent>
+                      <Alert severity="info">Grabbing a new profile</Alert>
+                    </CardContent>
+                  </Card>
+
+                </React.Fragment>}
+                {matchProfile != undefined && matchProfile != "loading" && <React.Fragment>
                   <Card sx={{}}>
                     <CardMedia
                       component="img"
                       // height="200"
-                      image={FILE_SERVER_URL+"/"+matchProfile.image1}
+                      image={FILE_SERVER_URL + "/" + matchProfile.image1}
                       alt="green iguana"
                     ></CardMedia>
                     <CardContent>
@@ -278,7 +313,20 @@ export default function Dashboard(props) {
                   </Card>
 
                 </React.Fragment>}
+                {matchProfile == undefined && <React.Fragment>
+                  <Card sx={{}}>
+                    {/* <CardMedia
+                      component="img"
+                      // height="200"
+                      image={FILE_SERVER_URL+"/"+matchProfile.image1}
+                      alt="green iguana"
+                    ></CardMedia> */}
+                    <CardContent>
+                      <Alert severity="info">You have run out of matches</Alert>
+                    </CardContent>
+                  </Card>
 
+                </React.Fragment>}
                 <Grid
                   container
                   style={{ padding: 10 }}
@@ -286,22 +334,22 @@ export default function Dashboard(props) {
                   direction="row"
                   justify="center">
                   <Grid item>
-                    <IconButton className={classes.swipButtonGoBack}>
+                    <IconButton disabled className={classes.swipButtonGoBack}>
                       <ReplayIcon fontSize="large" />
                     </IconButton>
                   </Grid>
                   <Grid item>
-                    <IconButton className={classes.swipButtonCancel}>
+                    <IconButton className={classes.swipButtonCancel} onClick={() => {matchService(matchProfile, false)}}>
                       <CloseIcon fontSize="large" />
                     </IconButton>
                   </Grid>
                   <Grid item>
-                    <IconButton className={classes.swipButtonSuperLike}>
+                    <IconButton disabled className={classes.swipButtonSuperLike}>
                       <StarRateIcon fontSize="large" />
                     </IconButton>
                   </Grid>
                   <Grid item>
-                    <IconButton className={classes.swipButtonLike}>
+                    <IconButton className={classes.swipButtonLike} onClick={() => {matchService(matchProfile, true)}}>
                       <FavoriteIcon fontSize="large" />
                     </IconButton>
                   </Grid>

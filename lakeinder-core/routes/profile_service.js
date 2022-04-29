@@ -50,6 +50,7 @@ const calculateDistance = (profile, myprofile) => {
     // get new profile location
     let locPair1 = [0,0]
     let locPair2 = [0,0]
+
     for(let i in locations[profile["country"]]){
         if(locations[profile["country"]][i]["City"] == profile["city"]){
             locPair1[0] = locations[profile["country"]][i]["Latitude"]
@@ -57,10 +58,7 @@ const calculateDistance = (profile, myprofile) => {
         }
     }
     for(let i in locations[myprofile["country"]]){
-        console.log(locations[myprofile["country"]][i]["City"])
-        console.log(locations[myprofile["city"]])
         if(locations[myprofile["country"]][i]["City"] == myprofile["city"]){
-            console.log("Found")
             locPair2[0] = locations[myprofile["country"]][i]["Latitude"]
             locPair2[1] = locations[myprofile["country"]][i]["Longitude"]
         }
@@ -71,13 +69,92 @@ const calculateDistance = (profile, myprofile) => {
     return dist
 
 }
+
+router.post('/match', authware, async(req,res,next) => {
+    let target_id = (req.body.id)
+    let match = req.body.match
+    if(match != true && match != false){
+        res.status(400).send({"message": "Missing match"})
+        return
+    }
+    if(match){
+        match = "TRUE"
+    }else{
+        match = "FALSE"
+    }
+
+    let initator_id = (req.user.id)
+    if(target_id == initator_id){
+        res.status(400).send({"message": "You can't match with yourself"})
+        return
+    }
+
+    client.query('SELECT * FROM matches WHERE initiator = ' + initator_id + " AND target = " + target_id).then((sql_res) => {
+        if(sql_res.rows.length == 0){
+            // Set up maching
+            client.query("SELECT * FROM matches WHERE initiator = " + target_id + " AND target = " + initator_id).then((r) => {
+                if(r.rows.length > 0){
+                    console.log("found something")
+                    if(r.rows[0]["match"] == false){
+                        client.query('INSERT INTO matches (initiator, target, match)  VALUES (' + initator_id + ", " + target_id + ", " + match + ")" ).then((r) => {
+                            res.send()
+                        }).catch((e) => {
+                            console.log(e)
+                            console.log(e)
+                            res.status(400).send({"message": "Unknown error"})
+                        })
+                    }else{
+                        // Allow match.
+                        // TODO: NOTIFICATION
+                        client.query('INSERT INTO matches (initiator, target, match)  VALUES (' + initator_id + ", " + target_id + ", " + match + ")" ).then(() => {
+                            // Create chat_room
+                            client.query('INSERT INTO chat_room (user1, user2)  VALUES (' + initator_id + ", " + target_id + ")" ).then((_r) => {
+                                res.send()
+                            }).catch((e) => {
+                                // Should never go here. I will not handle this error. Not enough time
+                                console.log("ERROR", e)
+                                res.send()
+
+                            })
+                        }).catch((e) => {
+                            res.status(400).send({"message": "Unknown error"})
+                        })
+                    }
+                }
+                // Not matched
+                if(r.rows.length == 0){
+                    client.query('INSERT INTO matches (initiator, target, match)  VALUES (' + initator_id + ", " + target_id + ", " + match + ")" ).then((r) => {
+                        res.send()
+                    }).catch((e) => {
+                        console.log(e)
+                        console.log(e)
+                        res.status(400).send({"message": "Unknown error"})
+                    })
+
+                }
+            })
+            
+
+            // client.query('INSERT INTO matches (initiator, target, match)  VALUES (' + initator_id + ", " + target_id + ", " + match + ")" ).then((r) => {
+            //     res.send()
+            // }).catch((e) => {
+            //     console.log(e)
+            //     console.log(e)
+            //     res.status(400).send({"message": "Unknown error"})
+            // })
+        }else{
+            res.send();
+            return
+        }
+    })
+})
+
 // TODO ADD CONSTRAINT
 router.get('/', authware, async(req,res,next) => {
     let id = req.user.id
-    client.query('SELECT * FROM users_user WHERE id = ' + id, (err, sql_res) => {
-        console.log("HYE")
+
+    client.query("SELECT * FROM users_user WHERE id = " + id).then((sql_res) => {
         if(sql_res.rows.length > 0){
-            console.log("???")
             // We are in ur user
             let sex = sql_res.rows[0].sex
             let myProfile = sql_res.rows[0]
@@ -85,26 +162,67 @@ router.get('/', authware, async(req,res,next) => {
             if(sex == 2){
                 lookfor = 9
             }
-            client.query('SELECT * FROM users_user WHERE sex = ' + lookfor).then( (sql_res) => {
-   
+            client.query("SELECT * FROM users_user WHERE id != " + id + " AND sex = " + lookfor + " AND id NOT IN (SELECT target FROM matches WHERE initiator = " + id + ")",).then( (sql_res) => {
                 if(sql_res.rows.length < 1){
                     res.send({})
                 }else{
+
                     let prof = sql_res.rows[Math.floor(Math.random()*sql_res.rows.length)]
                     prof["distance"] = calculateDistance(prof, myProfile)
                     res.send(prof)
                     
                 }
             }).catch((e) => {
-                console.log("errr")
-                console.log(e)
+                res.status(400).send({"message": "Unknown error"})
             })
         }else{
-            console.log("NO")
+            res.send({}) 
         }
         return
+    }).catch((e) => {
+
     })
 })
 
+const getAllMatches = (id) => {
+    matches = []
+    return new Promise(async (resolve, reject) => {
+        client.query("SELECT * FROM matches WHERE initiator = " + id).then(async (sql_res) => {
+            if(sql_res.rows.length == 0){
+                resolve([])
+            }
+            for(let i in sql_res.rows){
+
+                console.log(sql_res.rows[i]["target"])
+                if(sql_res.rows[i]["target"] != undefined){
+                    await client.query("SELECT * FROM matches WHERE target = " + id + " AND initiator = " + sql_res.rows[i]["target"]).then(async (r) => {
+                        try{
+                            await client.query("SELECT * FROM users_user WHERE id = " + r.rows[0]["initiator"]).then(async (r_) => {
+                                matches.push(r_.rows[0])   
+                            }).catch((e) => {
+                                reject(e)
+                            })
+                        }
+                        catch(e){}
+                        
+                    }).catch((e) => {
+                        reject(e)
+                    })
+                }
+                if(i == (sql_res.rows.length - 1)){
+                    resolve(matches)
+                }
+            }
+        }).catch((e) => {
+            reject(e)
+        })
+    })
+}
+
+
+router.get('/matches', authware, async(req,res,next) => {
+    let id = req.user.id
+    res.send(await getAllMatches(id))    
+})
 
 module.exports = router
