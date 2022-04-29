@@ -21,19 +21,21 @@ logging.basicConfig(level=logging.NOTSET) # Here
 
 
 # Create your views here.
+
+#header = request.META['HTTP_AUTHORIZATION']
+#user_id = decodeRefreshToken(header)["id"]
+
 '''
     How to validate the user is logged in.
     header = request.META['HTTP_AUTHORIZATION']
     This will give you the jwt token
     Now you can decode this to get the user id
     user_id = decodeRefreshToken(header)["id"]
-
-
 '''
 # Register View
 '''
-    @brief This view takes in a JSON converts the data into a serial object and saves using the Django model functionality 
-'''        
+    @brief This view takes in a JSON converts the data into a serial object and saves using the Django model functionality
+'''
 class Register(APIView):
     # Post Register Request
     def post(self, request):
@@ -43,11 +45,9 @@ class Register(APIView):
         # Extra Required Fields. Not including user fields...
         resp, code = requiredFields(["tags"], request.data)
 
-
         if(resp):
             return Response(resp, status=code)
-        
-        
+
         tags = request.data["tags"]
         tags = remove_duplicates(tags)
         logging.debug(tags)
@@ -67,6 +67,10 @@ class Register(APIView):
             ^^ Should contain an image id from FileSErvices
             SET request.data["image1"] = IMAGE_ID from file services
         '''
+
+        #request.data["image1"]
+        #IDService = uploadToFileServices(request.data["image1"])
+
         serializer = UserSerializer(data=request.data)
 
         # Check if the fields are all valid
@@ -108,7 +112,7 @@ class Login(APIView):
         if not user.check_password(password):
             error = LAKE_ERROR("INCORRECT_PASSWORD")
             return Response({"message": error.getMessage()}, status=error.getStatus())
-        
+
         response = Response()
         # Generate refresh token
         refresh_token = generateRefreshToken(user.id)
@@ -121,7 +125,7 @@ class Login(APIView):
 
         # Set reponse data that contains the accessToken
         data_resp = {
-            "message": LAKE_ERROR("OK").getMessage(), 
+            "message": LAKE_ERROR("OK").getMessage(),
             'accessToken': token}
         # Store refresh token inside cookies. This is used in the RefreshToken view
         response = HttpResponse(json.dumps(data_resp), content_type="application/json")
@@ -157,7 +161,7 @@ class RefreshToken(APIView):
             error = LAKE_ERROR("TOKEN_ERROR")
             return Response({"message": error.getMessage()}, status=error.getStatus())
 
-        # Check if user is still valid       
+        # Check if user is still valid
         auth_token = generateAuthToken(payload["id"])
         # Check if the auth_token is empty
         if (auth_token is None):
@@ -182,4 +186,3 @@ class LogoutView(APIView):
 
         response.set_cookie(key='jwt', value='', httponly=True, expires=1)
         return response
-     
