@@ -62,7 +62,9 @@ client.query(`CREATE TABLE IF NOT EXISTS chat_room (
 })
 
 client.query(`CREATE TABLE IF NOT EXISTS chat_table (
-  chat_id integer REFERENCES chat_room (chat_room_id),
+  chat_id SERIAL PRIMARY KEY,
+  chat_room_id integer REFERENCES chat_room (chat_room_id),
+  sender integer REFERENCES users_user (id),
   message TEXT NOT NULL
 )`).then((r) => {
   console.log("Creating chat_table table")

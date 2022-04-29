@@ -219,10 +219,84 @@ const getAllMatches = (id) => {
     })
 }
 
+const getProfile = (id) => {
+    return new Promise((resolve, reject) => {
+        client.query("SELECT * FROM users_user WHERE id = " + id).then((sql_res) => {
+            resolve(sql_res.rows[0])
+        }).catch((e) => {
+            reject(e)
+        })
+    })
+}
+const getChatRoom = (id, myId) => {
 
+    /**
+     * 
+     * messageHistory: [{
+        type: 'text',
+        author: "them",
+        data: { text: "Lets go on a date to rwanda babes" }
+      },
+     */
+    return new Promise((resolve, reject) => {
+        client.query("SELECT * FROM chat_table WHERE chat_room_id = " + id).then((sql_res) => {
+            chat = []
+            let rows = sql_res.rows
+            if(rows.length == 0){
+                resolve([])
+            }
+            for(let i in rows){
+                let them = true
+                if(rows[i].sender == myId){
+                    them = false
+                }
+                chat.push({
+                    "type": "text",
+                    "author": them,
+                    "data": {"text": rows[i].message}
+                })
+                if(i == rows.length - 1){
+                    resolve(chat)
+                }
+            }
+            
+        }).catch((e) => {
+            reject(e)
+        })
+    }) 
+}
 router.get('/matches', authware, async(req,res,next) => {
     let id = req.user.id
-    res.send(await getAllMatches(id))    
+    let matches = []
+    client.query("SELECT * FROM chat_room WHERE user1 = " + id + " OR user2 = " + id ).then(async (r) => {
+        if(r.rows.length == 0){
+            res.send([])
+            return
+        }
+        for(let i in r.rows){
+            let d =r.rows[i]
+            let target = 0
+            let chat_room_id = d["chat_room_id"]
+
+            if(d["user1"] != id){
+                target = d["user1"]
+            }else{
+                target = d["user2"]
+            }
+            let prof = await getProfile(target)
+            // Get Messages
+            let msg = await getChatRoom(chat_room_id)
+            prof["message"]
+            matches.push(prof)
+
+        }
+        res.send(matches)
+        
+    }).catch((e) => {
+        console.log("error")
+        console.log(e)
+        res.status(400).send()
+    })
 })
 
 module.exports = router
