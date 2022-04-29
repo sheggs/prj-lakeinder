@@ -114,6 +114,11 @@ const useStyles = makeStyles((theme) => ({
 
 export default function RegisterModal(props) {
     const { axios_net, setAccessToken, accessToken } = useContext(UserContext)
+
+    const [image1, setimage1] = useState(undefined)
+    const [image2, setimage2] = useState(undefined)
+    const [image3, setimage3] = useState(undefined)
+
     const [countryList, setCountryList] = useState(undefined)
     const [world_list, set_world_list] = useState({})
     const [cityList, setCityList] = useState([])
@@ -219,10 +224,10 @@ export default function RegisterModal(props) {
         d.email = event.email
         d.date_of_birth = new Date(event.dateofbirth).toISOString().split('T')[0]
         d.password = password
-        if(gender == "Male"){
+        if (gender == "Male") {
             d.sex = 2
-        }else{
-            d.sex = 1
+        } else {
+            d.sex = 9
         }
         setData(d)
         setStep(1)
@@ -230,11 +235,10 @@ export default function RegisterModal(props) {
     }
 
     const registerSubmitPhaseImage = (e) => {
-        let d = data
-        d.image1 = e.image1
-        d.image2 = e.image2
-        d.image3 = e.image3
-        setData(d)
+        setimage1(e.image1[0])
+        setimage2(e.image2[0])
+        setimage3(e.image3[0])
+
         setStep(2)
 
     }
@@ -287,13 +291,35 @@ export default function RegisterModal(props) {
         setTags(cpy)
     }
     const finalSubmit = (e) => {
-        let cpy = data
-        cpy.tags = tags
-        cpy.country = country
-        cpy.city = city
+        let fData = new FormData()
+        console.log(image1)
+        console.log(typeof(image1))
+        fData.append("image1", image1)
+        fData.append("image2", image2)
+        fData.append("image3", image3)
+        fData.append("first_name", data.first_name)
+        fData.append("last_name", data.last_name)
+        fData.append("email", data.email)
+        fData.append("date_of_birth", data.date_of_birth)
+        fData.append("password", data.password)
+        fData.append("sex", data.sex)
+        if(tags.length > 0){
+            for(let i in tags){
+                fData.append("tags", tags[i])
+
+            }
+        }else{
+            fData.append("tags")
+        }
+        fData.append("country", country)
+        fData.append("city", city)
 
 
-        axios_net.post("auth/register", cpy, { skipAuthRefresh: true, withCredentials: true }).then((r) => {
+        axios_net.post("auth/register", fData, {
+            headers: {
+                'content-type': 'multipart/form-data'
+            }, skipAuthRefresh: true, withCredentials: true
+        }).then((r) => {
             props.onClose("registered")
         }).catch((e) => {
             if (e.response.status) {
@@ -573,7 +599,6 @@ export default function RegisterModal(props) {
                                             onChange={onCitySelectChange}
                                             name="city"
                                             defaultValue={city == undefined ? "" : city}
-
                                             variant="outlined"
                                             error={errors.city ? true : false}
                                         >

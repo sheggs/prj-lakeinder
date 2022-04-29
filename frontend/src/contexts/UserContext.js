@@ -9,16 +9,15 @@ export const UserContext = createContext()
 
 export default function UserContextProvider(props) {
   let history = useHistory()
-  const baseURL = "http://" + process.env.REACT_APP_BACKEND_NAME
   const axios_net = axios.create({
-    baseURL: baseURL,
+    baseURL: "http://" + "localhost:8000",
     timeout: 2000,
   })
   axios_net.interceptors.response.use((response) => response, async (error) => {
     if (error.response) {
       if (error.response.status == 401 ) {
         setAccessToken(null)
-        let r = await axios.post(baseURL+"/auth/refresh_token",{},{withCredentials:true})
+        let r = await axios.post("http://" + "localhost:8000"+"/auth/refresh_token",{},{withCredentials:true})
         if(r.data.accessToken == ""){
           // Session has expired
           history.push("/?sessionexpired")
@@ -34,6 +33,29 @@ export default function UserContextProvider(props) {
 
   })
 
+  const lakeinder_core_axios = axios.create({
+    baseURL: "http://localhost:6326",
+    timeout: 2000,
+  })
+  lakeinder_core_axios.interceptors.response.use((response) => response, async (error) => {
+    if (error.response) {
+      if (error.response.status == 401 ) {
+        setAccessToken(null)
+        let r = await axios.post("http://" + "localhost:8000"+"/auth/refresh_token",{},{withCredentials:true})
+        if(r.data.accessToken == ""){
+          // Session has expired
+          history.push("/?sessionexpired")
+        }else{
+          setAccessToken(r.data.accessToken)
+          error.response.config.headers['Authorization'] = "Bearer " + r.data.accessToken
+          return lakeinder_core_axios(error.response.config)
+        }
+
+      }
+      return Promise.reject(error)
+    }
+
+  })
   const [accessToken, setAccessToken] = useState()
   const [goBack, setBack] = useState()
   const [section, setSection] = useState()
@@ -96,7 +118,7 @@ export default function UserContextProvider(props) {
   }
 
   return (
-    <UserContext.Provider value={{ axios_net, accessToken, setAccessToken, isAuth, me, setMe, section, setSection, drawerHidden, setDrawerHidden, sideBar, setSideBar, sideBarBoolen, setSideBarBoolen, collasableSideBar, setCollapsableSidebar, selectedSideBar, setSelectedSideBar }}>
+    <UserContext.Provider value={{ lakeinder_core_axios, axios_net, accessToken, setAccessToken, isAuth, me, setMe, section, setSection, drawerHidden, setDrawerHidden, sideBar, setSideBar, sideBarBoolen, setSideBarBoolen, collasableSideBar, setCollapsableSidebar, selectedSideBar, setSelectedSideBar }}>
       {props.children}
     </UserContext.Provider>
   )

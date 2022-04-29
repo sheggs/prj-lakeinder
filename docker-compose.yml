@@ -1,6 +1,16 @@
 # To be tested and completed
 version: '3'
-services: 
+services:
+    db:
+        image: postgres
+        volumes:
+        - ./sql_service/db:/var/lib/postgresql/data
+        environment:
+        - POSTGRES_DB=postgres
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+        ports:
+            - "5433:5432"
     backend:
         build: ./backend
         volumes:

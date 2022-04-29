@@ -20,8 +20,8 @@ import Container from '@material-ui/core/Container';
 import Loading from '../Loading';
 import { AppBar, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Divider, ThemeProvider, Card, CardContent, CardMedia, CardActionArea } from '@material-ui/core';
 
-import {Launcher} from 'react-chat-window';
-
+import { Launcher } from 'react-chat-window';
+import { FILE_SERVER_URL } from '../../config/config'
 import ReplayIcon from "@material-ui/icons/Replay";
 import CloseIcon from "@material-ui/icons/Close";
 import StarRateIcon from "@material-ui/icons/StarRate";
@@ -90,7 +90,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Dashboard(props) {
   const classes = useStyles()
-  const { axios_net, setAccessToken, accessToken, setSection } = useContext(UserContext)
+  const { lakeinder_core_axios, axios_net, setAccessToken, accessToken, setSection } = useContext(UserContext)
   const [frontPageURIs, setFrontPageURIs] = useState([{}]);
   const [loading, setLoading] = useState(0);
   const [myData, setMyData] = useState()
@@ -114,6 +114,18 @@ export default function Dashboard(props) {
     setMessageBoxUserID(null)
     snackBar("Closed message box :)", "success")
   }
+  const calcAge = (e) => {
+    let date = new Date(e)
+    let nowDate = new Date()
+    let age = nowDate.getFullYear() - date.getFullYear()
+    let m = nowDate.getMonth() - date.getMonth()
+    if (m < 0 || (m === 0 && nowDate.getDate() < date.getDate())) {
+      age = age - 1
+    }
+
+    return age
+  }
+
   const [swipeData, setSwipeData] = useState(
     {
       id: 8,
@@ -135,13 +147,14 @@ export default function Dashboard(props) {
       messageHistory: [{
         type: 'text',
         author: "them",
-        data: { text: "Lets go on a date to rwanda babes"}
+        data: { text: "Lets go on a date to rwanda babes" }
       },
       {
-      type: 'text',
-      author: "me",
-      data: { text: "u clapped"}
-    }]},
+        type: 'text',
+        author: "me",
+        data: { text: "u clapped" }
+      }]
+    },
     {
       id: 9,
       first_name: "Boris",
@@ -150,17 +163,29 @@ export default function Dashboard(props) {
       messageHistory: []
     }
   ]
+
+
+  const [matchProfile, setMatchProfile] = useState({})
   // Load country data
   useEffect(() => {
     let isSubscribed = true
+
+
     axios_net.get("profile/me", { headers: { Authorization: accessToken } }).then((r) => {
       console.log("HERE?")
       if (isSubscribed) {
+        lakeinder_core_axios.get("profile/", { headers: { Authorization: accessToken } }).then((resp) => {
+          setMatchProfile(resp.data)
+          if (Object.keys(resp.data).length == 0) {
+            setMatchProfile(undefined)
+          }
+        })
         setMyData(r.data)
       }
 
     }).catch((e) => {
       if (isSubscribed) {
+        setMatchProfile(null)
         setMyData(null)
       }
     })
@@ -189,7 +214,7 @@ export default function Dashboard(props) {
                   // justify="space-around"
                   alignItems="center">
                   <Grid item>
-                    <Avatar />
+                    <Avatar src={myData != undefined && FILE_SERVER_URL + "/" + myData.image1} />
                   </Grid>
                   <Grid item>
                     <Typography variant="h6" component="h6" style={{ "color": "white" }} >{myData == undefined ? "? Dms" : myData.first_name + " DMs"}</Typography>
@@ -204,7 +229,7 @@ export default function Dashboard(props) {
                 {messageBox.map((v) => (
                   <Grid item xs={12}>
                     <Card >
-                      <CardActionArea className={classes.dmButton} onClick={()=> {show_message_box_for(v.id)}} >
+                      <CardActionArea className={classes.dmButton} onClick={() => { show_message_box_for(v.id) }} >
                         <Grid container direction="rows" spacing={1}>
                           <Grid item>
                             <Avatar src={v.image}></Avatar>
@@ -235,20 +260,31 @@ export default function Dashboard(props) {
                   <img className={classes.logo} src="/logo.png" alt="image" />
                 </IconButton>
               </Grid>
-              <Grid item xs={12}>
-                <Card sx={{}}>
-                  <CardMedia
-                    component="img"
-                    // height="200"
-                    image="https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Ismail_ibn_Musa_Menks_talk_at_Kerala_State_Business_Excellence_Awards_2015.jpg/220px-Ismail_ibn_Musa_Menks_talk_at_Kerala_State_Business_Excellence_Awards_2015.jpg"
-                    alt="green iguana"
-                  />
-                </Card>
+              <Grid item xs={6}>
+                {matchProfile != undefined && <React.Fragment>
+                  <Card sx={{}}>
+                    <CardMedia
+                      component="img"
+                      // height="200"
+                      image={FILE_SERVER_URL+"/"+matchProfile.image1}
+                      alt="green iguana"
+                    ></CardMedia>
+                    <CardContent>
+                      <Typography variant="h6" component="h6" >{matchProfile.first_name + " " + matchProfile.last_name}</Typography>
+                      <Typography>{"Distance: " + matchProfile.distance}</Typography>
+                      <Typography>{"Age: " + calcAge(new Date(matchProfile.date_of_birth))}</Typography>
+                      <Typography>{matchProfile.city + ", " + matchProfile.country}</Typography>
+                    </CardContent>
+                  </Card>
+
+                </React.Fragment>}
+
                 <Grid
                   container
-                  style={{padding: 10}}
+                  style={{ padding: 10 }}
                   spacing={5}
-                  direction="row">
+                  direction="row"
+                  justify="center">
                   <Grid item>
                     <IconButton className={classes.swipButtonGoBack}>
                       <ReplayIcon fontSize="large" />
@@ -269,11 +305,11 @@ export default function Dashboard(props) {
                       <FavoriteIcon fontSize="large" />
                     </IconButton>
                   </Grid>
-                  <Grid item>
+                  {/* <Grid item>
                     <IconButton disabled className={classes.swipButtonLike}>
                       <FlashOnIcon fontSize="large" />
                     </IconButton>
-                  </Grid>
+                  </Grid> */}
 
                 </Grid>
 
@@ -284,19 +320,19 @@ export default function Dashboard(props) {
         </Grid>
       </Paper >
       {messageBox.find(ele => ele.id == messageBoxUserID) != undefined &&
-           <Launcher
-           agentProfile={{
-               teamName: messageBox.find(ele => ele.id == messageBoxUserID).first_name + " " + messageBox.find(ele => ele.id == messageBoxUserID).last_name,
-               imageUrl: messageBox.find(ele => ele.id == messageBoxUserID).image
-             }}
-             handleClick={launcherClick}
-             showEmoji={false}
-             messageList={messageBox.find(ele => ele.id == messageBoxUserID).messageHistory}
-             isOpen={messageBoxUserID == undefined ? false : showMessageBox}
-             ></Launcher>
+        <Launcher
+          agentProfile={{
+            teamName: messageBox.find(ele => ele.id == messageBoxUserID).first_name + " " + messageBox.find(ele => ele.id == messageBoxUserID).last_name,
+            imageUrl: messageBox.find(ele => ele.id == messageBoxUserID).image
+          }}
+          handleClick={launcherClick}
+          showEmoji={false}
+          messageList={messageBox.find(ele => ele.id == messageBoxUserID).messageHistory}
+          isOpen={messageBoxUserID == undefined ? false : showMessageBox}
+        ></Launcher>
       }
-       <Snackbar open={open} autoHideDuration={6000} onClose={() => {setOpen(false)}}>
-        <Alert onClose={() => {setOpen(false)}} severity={sev}>
+      <Snackbar open={open} autoHideDuration={6000} onClose={() => { setOpen(false) }}>
+        <Alert onClose={() => { setOpen(false) }} severity={sev}>
           {error_msg}
         </Alert>
       </Snackbar>

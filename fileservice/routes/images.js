@@ -11,6 +11,10 @@ const storage = multer.diskStorage({
         cb(null, './images/');
     },
     filename: function(req, file, cb) {
+        let data = {
+            images: require('../model/imageLocations.json'),
+            setImages: function (data) { this.images = data }
+        }
         let ts = Date.now();
 
         let date_time = new Date(ts);
@@ -34,16 +38,20 @@ const router = express.Router();
 const {getImage, _} = require('../controllers/imageController');
 
 router.route('/:id').get( (req, res, next) => {
+    let images = fs.readFileSync('./model/imageLocations.json')
+    images = JSON.parse(images)
     let data = {
-        images: require('../model/imageLocations.json'),
+        images: images,
         setImages: function (data) { this.images = data }
     }
     getImage(req, res);
 });
 
 router.route('/').post(upload.single('image'), async (req, res, next) => {
+    let images = fs.readFileSync('./model/imageLocations.json')
+    images = JSON.parse(images)
     let data = {
-        images: require('../model/imageLocations.json'),
+        images: images,
         setImages: function (data) { this.images = data }
     }
     let startingID = 1;
@@ -61,6 +69,9 @@ router.route('/').post(upload.single('image'), async (req, res, next) => {
 
     data.setImages([...data.images, newImage]);
     const dataString = JSON.stringify(data.images, null, 5);
+    console.log("hi")
+    console.log(filePath)
+    console.log(dataString)
      try {
         await fsPromises.writeFile(filePath, dataString, 'utf8');
         console.log("File written successfully\n");

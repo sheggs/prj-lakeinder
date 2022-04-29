@@ -53,6 +53,7 @@ const getImage = async (req, res) => {
     }
     else {
         const originalImage = path.resolve(path.normalize(image.image_file_location));
+        
         res.sendFile(fixPath(path.normalize(originalImage)));
     }
 }
