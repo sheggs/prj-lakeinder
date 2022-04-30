@@ -11,10 +11,10 @@ services:
         - POSTGRES_PASSWORD=postgres
         ports:
             - "5433:5432"
-    backend:
-        build: ./backend
+    auth_service:
+        build: ./auth_service
         volumes:
-            - ./backend:/code
+            - ./auth_service:/code
         ports: 
             - 8000:8000
         

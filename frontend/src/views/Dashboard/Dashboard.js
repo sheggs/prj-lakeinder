@@ -19,9 +19,10 @@ import { useForm } from 'react-hook-form'
 import Container from '@material-ui/core/Container';
 import Loading from '../Loading';
 import { AppBar, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Divider, ThemeProvider, Card, CardContent, CardMedia, CardActionArea } from '@material-ui/core';
+import io from 'socket.io-client';
 
 import { Launcher } from 'react-chat-window';
-import { FILE_SERVER_URL } from '../../config/config'
+import { FILE_SERVER_URL,CHAT_SERVER } from '../../config/config'
 import ReplayIcon from "@material-ui/icons/Replay";
 import CloseIcon from "@material-ui/icons/Close";
 import StarRateIcon from "@material-ui/icons/StarRate";
@@ -95,7 +96,7 @@ export default function Dashboard(props) {
   const [loading, setLoading] = useState(0);
   const [myData, setMyData] = useState()
   const [showMessageBox, setShowMessageBox] = useState(false)
-  const [messageBoxUserID, setMessageBoxUserID] = useState(null)
+
 
   const [open, setOpen] = React.useState(false);
   const [error_msg, seterr_msg] = React.useState("");
@@ -105,10 +106,7 @@ export default function Dashboard(props) {
     setSev(sev)
     setOpen(true)
   }
-  const show_message_box_for = (id) => {
-    setMessageBoxUserID(id)
-    setShowMessageBox(true)
-  }
+
   const launcherClick = (e) => {
     setShowMessageBox(false)
     setMessageBoxUserID(null)
@@ -136,33 +134,90 @@ export default function Dashboard(props) {
 
     }
   )
+  /** *
+    SOCKET
+  **/
 
-  //setSection("Dashboard")
-  const messageBox = [
-    {
-      id: 8,
-      first_name: "Priti",
-      last_name: "Patel",
-      image: "https://www.heraldscotland.com/resources/images/13689210.jpg?type=responsive-gallery-fullscreen",
-      messageHistory: [{
-        type: 'text',
-        author: "them",
-        data: { text: "Lets go on a date to rwanda babes" }
-      },
-      {
-        type: 'text',
-        author: "me",
-        data: { text: "u clapped" }
-      }]
-    },
-    {
-      id: 9,
-      first_name: "Boris",
-      last_name: "Johnson",
-      image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Boris_Johnson_official_portrait_%28cropped%29.jpg/220px-Boris_Johnson_official_portrait_%28cropped%29.jpg",
-      messageHistory: []
+
+  const [socket, setSocket] = useState(null)
+  useEffect(() => {
+    const newSocket = io(CHAT_SERVER, {
+      query: {token: accessToken},
+      withCredentials: true,
+    });
+    console.log(CHAT_SERVER)
+    setSocket(newSocket);
+    return () => newSocket.close();
+  }, [setSocket])
+
+  useEffect(() => {
+    // const messageListener = (message) => {
+    //   setMessages((prevMessages) => {
+    //     const newMessages = {...prevMessages};
+    //     newMessages[message.id] = message;
+    //     return newMessages;
+    //   });
+    // };
+  
+    // const deleteMessageListener = (messageID) => {
+    //   setMessages((prevMessages) => {
+    //     const newMessages = {...prevMessages};
+    //     delete newMessages[messageID];
+    //     return newMessages;
+    //   });
+    // };
+    if(socket != undefined){
+      socket.on('global_message_update', async (message) => { /** Recieved a message */ console.log("?global_message_update?"); await getMessages()});
+      socket.on('auth_message_failed', async (message) => { /** Recieved a message */ snackBar("Socket.io Auth Failed", "error")});
+
+      // socket.on('deleteMessage', deleteMessageListener);
+      socket.emit('getMessages');
     }
-  ]
+
+
+    return () => {
+      if(socket != undefined){
+        socket.off('message');
+        socket.off('deleteMessage');
+      }
+
+    };
+  }, [socket]);
+  const [messageRoom, setMessageRoom] = useState()
+  const getMessages = () => {
+    lakeinder_core_axios.get("profile/matches", { headers: { Authorization: accessToken } }).then((resp) => {
+      console.log("updated message room")
+      setMessageRoom(resp.data)
+      
+      // setMessageUpdateID
+      if (resp.length == 0) {
+        setMessageRoom(undefined)
+      }
+    })
+  }
+  const [messageBoxUserID, setMessageBoxUserID] = useState(null)
+  const [messageUpdateID, setMessageUpdateID] = useState(0)
+  const [messageBoxData, setMessageBoxUser] = useState(undefined)
+  useEffect(() => {
+    if(messageRoom != undefined){
+      setMessageBoxUser(messageRoom.find(ele => ele.id == messageBoxUserID))
+    }
+  },[messageBoxUserID])
+  const [messageHistory, setMessageHistory] = useState([])
+  useEffect(() => {
+    if(messageBoxUserID != undefined && messageRoom != undefined){
+      console.log("message update???")
+      setMessageHistory(messageRoom.find(ele => ele.id == messageBoxUserID).messageHistory)
+
+    }
+  },[messageRoom])
+  const show_message_box_for = (id) => {
+    setMessageBoxUserID(id)
+    if(messageRoom!= undefined){
+      setMessageHistory(messageRoom.find(ele => ele.id == id).messageHistory)
+    }
+    setShowMessageBox(true)
+  }
   const getNextProfile = () => {
     setMatchProfile("loading")
     lakeinder_core_axios.get("profile/", { headers: { Authorization: accessToken } }).then((resp) => {
@@ -175,14 +230,14 @@ export default function Dashboard(props) {
 
   const [matchProfile, setMatchProfile] = useState({})
   const matchService = (profile, match) => {
-    if(profile == undefined){
+    if (profile == undefined) {
       return
     }
     let id = profile.id
     lakeinder_core_axios.post("profile/match", { id: id, match: match }, { headers: { Authorization: accessToken } }).then((resp) => {
-      if(match == false){
+      if (match == false) {
         snackBar("</3", "error")
-      }else{
+      } else {
         snackBar("<3", "success")
       }
       getNextProfile()
@@ -191,14 +246,29 @@ export default function Dashboard(props) {
     })
 
   }
+  const onSendMessage = (e) => {
+    let data = e.data.text
+    console.log(socket)
+    if(socket == undefined){
+      snackBar("Lakeinder-Notify is down. Contact support", "error")
+      return
+    }
+    if(socket.connected == false){
+      snackBar("Lakeinder-Notify is down. Contact support", "error")
+      return     
+    }
+    let chat_room_id=messageRoom.find(ele => ele.id == messageBoxUserID).chat_room_id
+    socket.emit("sendMessage", {"chat_room_id":chat_room_id,"message": data, "token": accessToken})
+  }
   // Load country data
-  useEffect(() => {
+  useEffect(async () => {
     let isSubscribed = true
     console.log("HEY")
 
-    axios_net.get("profile/me", { headers: { Authorization: accessToken } }).then((r) => {
-      console.log("HERE?")
+    axios_net.get("profile/me", { headers: { Authorization: accessToken } }).then(async (r) => {
+      console.log("HaERE?")
       if (isSubscribed) {
+        await getMessages();
         lakeinder_core_axios.get("profile/", { headers: { Authorization: accessToken } }).then((resp) => {
           setMatchProfile(resp.data)
           console.log(Object.keys(resp.data))
@@ -252,26 +322,31 @@ export default function Dashboard(props) {
                 direction="column"
                 // alignItems="center"
                 spacing={0}>
-                {messageBox.map((v) => (
-                  <Grid item xs={12}>
-                    <Card >
-                      <CardActionArea className={classes.dmButton} onClick={() => { show_message_box_for(v.id) }} >
-                        <Grid container direction="rows" spacing={1}>
-                          <Grid item>
-                            <Avatar src={v.image}></Avatar>
+                {messageRoom == undefined && <React.Fragment><Alert severity="info">You are lonely :(</Alert></React.Fragment>}
+                {messageRoom != undefined && <React.Fragment>
+                  {messageRoom.map((v) => (
+                    <Grid item xs={12}>
+                      <Card >
+                        <CardActionArea className={classes.dmButton} onClick={() => { show_message_box_for(v.id) }} >
+                          <Grid container direction="rows" spacing={1}>
+                            <Grid item>
+                              <Avatar src={FILE_SERVER_URL + "/" + v.image1}></Avatar>
+                            </Grid>
+                            <Grid item>
+                              <Typography variant="h6" component="h6">{v.first_name + " " + v.last_name}</Typography>
+                            </Grid>
+                            <Grid item>
+                              {v.messageHistory.length == 0 && <p style={{ textAlign: "center" }}>Start this Conversation</p>}
+                              {v.messageHistory.length != 0 && <p style={{ textAlign: "center" }}>{v.messageHistory.at(-1).author == "me" ? "You: " : v.first_name + ": "}{v.messageHistory.at(-1).data.text}</p>}
+                            </Grid>
                           </Grid>
-                          <Grid item>
-                            <Typography variant="h6" component="h6">{v.first_name + " " + v.last_name}</Typography>
-                          </Grid>
-                          <Grid item>
-                            {v.messageHistory.length == 0 && <p style={{ textAlign: "center" }}>Start this Conversation</p>}
-                            {v.messageHistory.length != 0 && <p style={{ textAlign: "center" }}>{v.messageHistory.at(-1).author == "me" ? "You: " : v.first_name + ": "}{v.messageHistory.at(-1).data.text}</p>}
-                          </Grid>
-                        </Grid>
-                      </CardActionArea>
-                    </Card>
-                  </Grid>
-                ))}
+                        </CardActionArea>
+                      </Card>
+                    </Grid>
+                  ))}
+
+                </React.Fragment>}
+
               </Grid>
             </Paper>
           </Grid>
@@ -289,7 +364,7 @@ export default function Dashboard(props) {
               <Grid item xs={6}>
                 {matchProfile == "loading" && <React.Fragment>
                   <Card sx={{}}>
-              
+
                     <CardContent>
                       <Alert severity="info">Grabbing a new profile</Alert>
                     </CardContent>
@@ -339,7 +414,7 @@ export default function Dashboard(props) {
                     </IconButton>
                   </Grid>
                   <Grid item>
-                    <IconButton className={classes.swipButtonCancel} onClick={() => {matchService(matchProfile, false)}}>
+                    <IconButton className={classes.swipButtonCancel} onClick={() => { matchService(matchProfile, false) }}>
                       <CloseIcon fontSize="large" />
                     </IconButton>
                   </Grid>
@@ -349,7 +424,7 @@ export default function Dashboard(props) {
                     </IconButton>
                   </Grid>
                   <Grid item>
-                    <IconButton className={classes.swipButtonLike} onClick={() => {matchService(matchProfile, true)}}>
+                    <IconButton className={classes.swipButtonLike} onClick={() => { matchService(matchProfile, true) }}>
                       <FavoriteIcon fontSize="large" />
                     </IconButton>
                   </Grid>
@@ -367,18 +442,23 @@ export default function Dashboard(props) {
           </Grid>
         </Grid>
       </Paper >
-      {messageBox.find(ele => ele.id == messageBoxUserID) != undefined &&
-        <Launcher
-          agentProfile={{
-            teamName: messageBox.find(ele => ele.id == messageBoxUserID).first_name + " " + messageBox.find(ele => ele.id == messageBoxUserID).last_name,
-            imageUrl: messageBox.find(ele => ele.id == messageBoxUserID).image
-          }}
-          handleClick={launcherClick}
-          showEmoji={false}
-          messageList={messageBox.find(ele => ele.id == messageBoxUserID).messageHistory}
-          isOpen={messageBoxUserID == undefined ? false : showMessageBox}
-        ></Launcher>
-      }
+      {messageBoxData != undefined && messageHistory != undefined && <React.Fragment>
+        {messageBoxData != undefined &&
+          <Launcher
+            agentProfile={{
+              teamName: messageBoxData.first_name + " " + messageBoxData.last_name,
+              imageUrl: FILE_SERVER_URL + "/" + messageBoxData.image1 + "?height=80&width=80"
+            }}
+            handleClick={launcherClick}
+            onMessageWasSent={onSendMessage}
+            showEmoji={false}
+            messageList={messageHistory}
+            isOpen={messageBoxUserID == undefined ? false : showMessageBox}
+          ></Launcher>
+        }
+
+      </React.Fragment>}
+
       <Snackbar open={open} autoHideDuration={6000} onClose={() => { setOpen(false) }}>
         <Alert onClose={() => { setOpen(false) }} severity={sev}>
           {error_msg}

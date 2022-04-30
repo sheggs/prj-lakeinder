@@ -10,6 +10,9 @@ fileservice/node_modules/*
 lakeinder-core/node_modules/*
 lakeinder-core/node_modules/*
 
+lakeinder-notify/node_modules/*
+lakeinder-notify/node_modules/*
+
 
 prj-lakeinder-venv/*
 

@@ -246,9 +246,9 @@ const getChatRoom = (id, myId) => {
                 resolve([])
             }
             for(let i in rows){
-                let them = true
+                let them = "them"
                 if(rows[i].sender == myId){
-                    them = false
+                    them = "me"
                 }
                 chat.push({
                     "type": "text",
@@ -285,8 +285,8 @@ router.get('/matches', authware, async(req,res,next) => {
             }
             let prof = await getProfile(target)
             // Get Messages
-            let msg = await getChatRoom(chat_room_id)
-            prof["message"]
+            prof["chat_room_id"] = chat_room_id
+            prof["messageHistory"] = await getChatRoom(chat_room_id, req.user.id)
             matches.push(prof)
 
         }
@@ -298,5 +298,6 @@ router.get('/matches', authware, async(req,res,next) => {
         res.status(400).send()
     })
 })
+
 
 module.exports = router
