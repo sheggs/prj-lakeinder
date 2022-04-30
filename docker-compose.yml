@@ -11,12 +11,35 @@ services:
         - POSTGRES_PASSWORD=postgres
         ports:
             - "5433:5432"
+    fileservice:
+        build: ./fileservice
+        volumes:
+            - ./fileservice:/code
+        ports: 
+            - 3500:3500
     auth_service:
         build: ./auth_service
         volumes:
             - ./auth_service:/code
         ports: 
             - 8000:8000
-        
-            
+    lakeinder-core:
+        build: ./lakeinder-core
+        volumes:
+            - ./lakeinder-core:/code
+        ports: 
+            - 6326:6326
+    lakeinder-notify:
+        build: ./lakeinder-notify
+        volumes:
+            - ./lakeinder-notify:/code
+        ports: 
+            - 6584:6584
+    # frontend:
+    #     build: ./frontend
+    #     volumes:
+    #         - ./frontend:/code
+    #     ports: 
+    #         - 3000:3000   
+
     
