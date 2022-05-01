@@ -2,6 +2,8 @@ from django.test import TestCase
 from django.urls import reverse, resolve
 from users.models import User
 from users.serializer import UserSerializer
+from datetime import date
+import datetime
 from users.auth.helper_functions import generateAuthToken, generateRefreshToken, decodeAuthToken, decodeRefreshToken
 class TestUserModel(TestCase):
     '''
@@ -13,8 +15,13 @@ class TestUserModel(TestCase):
             "last_name": "Adams",
             "email": "test@test.com",
             "password": "password",
-            "sex": 1
-            "date_of_birth": "2001-03-22"
+            "sex": 1,
+            "image1": 0,
+            "image2": 0,
+            "image3": 0,
+            "city": "London",
+            "country": "United Kingdom",
+            "date_of_birth": "2001-03-22",
         }
 
         serializer = UserSerializer(data=register)
@@ -28,15 +35,9 @@ class TestUserModel(TestCase):
         self.assertEquals(user.first_name, register["first_name"])
         self.assertEquals(user.last_name, register["last_name"])
         self.assertEquals(user.sex, register["sex"])
-        self.assertEquals(user.date_of_birth, register["date_of_birth"])
+        self.assertEquals(user.date_of_birth, datetime.datetime.strptime(register["date_of_birth"], "%Y-%m-%d").date())
 
-        # check if the stored date_of_birth equals 18 years old - SHOULD THIS BE IN ITS OWN FUNCTION?
-        user_age = date.today() - user.date_of_birth.days / 365
-        if user_age > 18:
-            is_18_or_older = True
-        else:
-            is_18_or_older = False
-        self.assertTrue(is_18_or_older)
+
 
     '''
         @brief This is a test that validates the auth token generation.
@@ -47,8 +48,13 @@ class TestUserModel(TestCase):
             "last_name": "Adams",
             "email": "test@test.com",
             "password": "password",
-            "sex": 1
-            "date_of_birth": "2001-03-22"
+            "sex": 1,
+            "image1": 0,
+            "image2": 0,
+            "image3": 0,
+            "city": "London",
+            "country": "United Kingdom",
+            "date_of_birth": "2001-03-22",
         }
         serializer = UserSerializer(data=register)
         # Check if the fields are all valid
@@ -67,8 +73,13 @@ class TestUserModel(TestCase):
             "last_name": "Adams",
             "email": "test@test.com",
             "password": "password",
-            "sex": 1
-            "date_of_birth": "2001-03-22"
+            "sex": 1,
+            "image1": 0,
+            "image2": 0,
+            "image3": 0,
+            "city": "London",
+            "country": "United Kingdom",
+            "date_of_birth": "2001-03-22",
         }
         serializer = UserSerializer(data=register)
         # Check if the fields are all valid

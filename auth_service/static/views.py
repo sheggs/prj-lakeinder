@@ -18,4 +18,6 @@ class WorldCitiesJSON(APIView):
         j = json.load(f)
         return Response(j)
 
-   
+class HealthPageView(APIView):
+    def get(self, request):
+        return Response({})
