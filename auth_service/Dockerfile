@@ -17,6 +17,9 @@ RUN pip install -r requirements.txt
 COPY . .
 
 EXPOSE 8000
+# cmd ["./wait-for-it.sh", "db", "python", "manage.py", "makemigrations"]
+# cmd ["./wait-for-it.sh", "db", "python", "manage.py", "migrate"]
+# cmd ["./wait-for-it.sh", "db", "python", "manage.py", "runserver", "0.0.0.0:8000"]
 # # RUN ./wait-for-it.sh postgres python manage.py makemigrations
 # # RUN ./wait-for-it.sh postgres python manage.py migrate
 # cmd ["python", "manage.py", "makemigrations"]

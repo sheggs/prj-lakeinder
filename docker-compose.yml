@@ -1,26 +1,21 @@
+# Ensure all enviroments are the same :)
 version: "2.1"
 services:
-    # frontend:
-    #     build: ./frontend
-    #     volumes:
-    #         - ./frontend:/code
-    #     ports: 
-    #         - 3000:3000
-    #     container_name: frontend_container
-    #     stdin_open: true
-    #     tty: true
-    auth_service:
-        build: ./auth_service
+    # Setting up react server. Ensures the shell is always open to keep the front end running
+    # Should be in an nginx server for production.
+    frontend:
+        build: ./frontend
         volumes:
-            - ./auth_service:/code
+            - ./frontend:/code
         ports: 
-            - 8000:8000
-        entrypoint: ["bash","./wait-for-postgres.sh"]
-        depends_on:
-            - "db"
-        links:
-            - "db"
-        
+            - 3000:3000
+        container_name: frontend_container
+        stdin_open: true
+        tty: true
+
+    # Postgres DB
+    # Portforwarded to the localhost in port 5433, runs in the container has port 5432
+    # can run this on local machine to run access sql server... psql -h localhost -p 5433 -U postgres postgres
     db:
         image: postgres
         volumes:
@@ -31,26 +26,48 @@ services:
         - POSTGRES_PASSWORD=postgres
         ports:
             - "5433:5432"
-
-
-    # fileservice:
-    #     build: ./fileservice
-    #     volumes:
-    #         - ./fileservice:/code
-    #     ports: 
-    #         - 3500:3500
-
-    # lakeinder-core:
-    #     build: ./lakeinder-core
-    #     volumes:
-    #         - ./lakeinder-core:/code
-    #     ports: 
-    #         - 6326:6326
-    # lakeinder-notify:
-    #     build: ./lakeinder-notify
-    #     volumes:
-    #         - ./lakeinder-notify:/code
-    #     ports: 
-    #         - 6584:6584
+    # Running Auth_service after db loads using the wait-for-it.sh script
+    # This script just loops until postgres is ready
+    auth_service:
+        build: ./auth_service
+        volumes:
+            - ./auth_service:/code
+        container_name: auth_service
+        ports: 
+            - 8000:8000
+        environment:
+            - POSTGRES_DB=postgres
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+        command: [ "bash", "-c", "./wait-for-it.sh db python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+        depends_on:
+            - "db"
+        links: 
+            - "db:database"
+        restart: always
+    # Runs on basic node server. Does not require extra details.
+    # Copies data to container and runs on port 3500 on local machine and container
+    fileservice:
+        build: ./fileservice
+        volumes:
+            - ./fileservice:/code
+        ports: 
+            - 3500:3500
+    # Runs on basic node server. Does not require extra details.
+    # Copies data to container and runs on port 6326 on local machine and container
+    lakeinder-core:
+        build: ./lakeinder-core
+        volumes:
+            - ./lakeinder-core:/code
+        ports: 
+            - 6326:6326
+    # Runs on basic node server. Does not require extra details.
+    # Copies data to container and runs on port 6584 on local machine and container
+    lakeinder-notify:
+        build: ./lakeinder-notify
+        volumes:
+            - ./lakeinder-notify:/code
+        ports: 
+            - 6584:6584
 
     

@@ -1,10 +1,24 @@
 ## Backend Microservice ##
 
 # How to Run without docker-compose #
-cd into this directory
+backend/settings.py set the postgres info 
+```
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': 5433
+    }
+}
+```
+# To build run
+```
 sudo docker build -t backend .
 sudo docker run -dp 8000:8000 backend
-
+```
 
 ## File Structure ##
 ````
