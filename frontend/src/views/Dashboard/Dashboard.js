@@ -186,6 +186,7 @@ export default function Dashboard(props) {
   const [messageRoom, setMessageRoom] = useState()
   const getMessages = () => {
     lakeinder_core_axios.get("profile/matches", { headers: { Authorization: accessToken } }).then((resp) => {
+      console.log("resp")
       console.log("updated message room")
       setMessageRoom(resp.data)
       
@@ -376,7 +377,7 @@ export default function Dashboard(props) {
                     <CardMedia
                       component="img"
                       // height="200"
-                      image={FILE_SERVER_URL + "/" + matchProfile.image1}
+                      image={FILE_SERVER_URL + "/" + matchProfile.image1+ "?height=500&width=500"}
                       alt="green iguana"
                     ></CardMedia>
                     <CardContent>

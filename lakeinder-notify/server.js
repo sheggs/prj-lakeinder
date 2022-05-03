@@ -18,10 +18,10 @@ const { Pool, Client } = require('pg');
 
 const client = new Client({
   user: 'postgres',
-  host: 'localhost',
+  host: 'db',
   database: 'postgres',
   password: 'postgres',
-  port: 5433,
+  port: 5432,
 })
 client.connect()
 const KEY = "$2lC7Mn`46+giA:BW[KYr<XQ]}KeuC"

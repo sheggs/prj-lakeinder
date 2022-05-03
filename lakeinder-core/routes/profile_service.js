@@ -8,10 +8,10 @@ const { Pool, Client } = require('pg');
 
 const client = new Client({
     user: 'postgres',
-    host: 'localhost',
+    host: 'db',
     database: 'postgres',
     password: 'postgres',
-    port: 5433,
+    port: 5432,
   })
 client.connect() 
 // ISO/IEC 5218 says: 0 = not known, 1 = male, 2 = female, 9 = not applicable/other

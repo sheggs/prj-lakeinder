@@ -3,7 +3,12 @@
 const path = require('path');
 const sharp = require("sharp");
 function fixPath(path){
-    return path.replaceAll("\\","/")
+    try{
+        return path.replaceAll("\\","/")
+
+    }catch(e){
+        return path.replace("\\","/")
+    }
 }
 const fs = require('fs');
 

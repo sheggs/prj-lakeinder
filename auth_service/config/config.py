@@ -4,4 +4,4 @@ SECRET = '$2lC7Mn`46+giA:BW[KYr<XQ]}KeuC'
 
 
 # DO NOT END WITH A /
-FILE_SERVER = "http://localhost:3500"
+FILE_SERVER = "http://fileservice:3500"
