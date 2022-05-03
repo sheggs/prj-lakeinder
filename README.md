@@ -2,6 +2,10 @@
 ```
 docker-compose up
 ```
+# To run a no docker version
+```
+git checkout -b no_docker
+```
 
 # How to run Manually
 ```
