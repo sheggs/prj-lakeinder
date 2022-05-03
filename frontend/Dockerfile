@@ -1,14 +1,15 @@
-# # syntax=docker/dockerfile:1
-# FROM python:3
+FROM node:13.12.0-alpine
 
-# WORKDIR /code
+WORKDIR /code
 
-# COPY requirements.txt .
 
-# RUN pip install -r requirements.txt
+COPY package.json ./
+COPY package-lock.json ./
 
-# COPY . .
+RUN npm install
 
-# EXPOSE 8000
+COPY . . 
 
-# cmd ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+EXPOSE 3000
+
+CMD ["npm","start"]

@@ -1,5 +1,3 @@
-/** Copyright RedPanda - 2020-2022 */
-
 import React, { Fragment, useContext,useEffect,useState } from 'react';
 
 // import UserStore from '../stores/UserStore'

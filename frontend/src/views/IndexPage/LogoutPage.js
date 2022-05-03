@@ -1,5 +1,5 @@
 import React, { Fragment, useContext,useEffect,useState } from 'react';
-
+import Cookies from 'universal-cookie';
 import Avatar from '@material-ui/core/Avatar';
 import DefaultStyle from '../../extras/styles'
 import Button from '@material-ui/core/Button';
@@ -59,7 +59,6 @@ const useStyles = makeStyles((theme) => ({
 function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
-
 export default function LogoutPage(props) {
   const {axios_net, setAccessToken, accessToken } = useContext(UserContext)
   const classes = useStyles()
@@ -67,14 +66,18 @@ export default function LogoutPage(props) {
   const [error_msg, seterr_msg] = React.useState("");
   const [logoutState, setLogoutState] = React.useState(0)
   const { register, handleSubmit, errors, getValues } = useForm()
+  const cookies = new Cookies();
+
   const handleClose = () => {
     setOpen(false)
   }
   useEffect(() => {
     onSubmit()
   },[])
+
   const onSubmit = async e => {
-    await axios_net.post("/auth/logout", e, { skipAuthRefresh: true, withCredentials: true })
+    cookies.remove('jwt',{ path: '/' });
+    await axios_net.get("/auth/logout", e, { skipAuthRefresh: true, withCredentials: true })
       .then((resp) => {
         setAccessToken()
         setLogoutState(1)

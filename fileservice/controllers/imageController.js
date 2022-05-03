@@ -1,13 +1,22 @@
-const data = {
-    images: require('../model/imageLocations.json'),
-    setImages: function (data) { this.images = data }
-}
+
+
 const path = require('path');
 const sharp = require("sharp");
+function fixPath(path){
+    try{
+        return path.replaceAll("\\","/")
+
+    }catch(e){
+        return path.replace("\\","/")
+    }
+}
+const fs = require('fs');
 
 const getImage = async (req, res) => {
     console.log("Get /id Image:", req.params.id, req.query);
-    const image = data.images.find(img => img.id === parseInt(req.params.id));
+    let images = fs.readFileSync('./model/imageLocations.json')
+    images = JSON.parse(images)
+    const image = images.find(img => img.id === parseInt(req.params.id));
     if (!image) {
         return res.status(400).json({"message": `Image ID ${req.params.id} not found`});
     }
@@ -29,9 +38,9 @@ const getImage = async (req, res) => {
         console.log("height:", height, "width:", width)
 
 
-        const originalImage = path.resolve(image.image_file_location);
-
+        const originalImage = fixPath(path.normalize(path.resolve(path.normalize(image.image_file_location))));
             try {
+                
                 await sharp(originalImage)
                 .resize({
                 width: width,
@@ -48,7 +57,9 @@ const getImage = async (req, res) => {
     res.sendFile(path.resolve("resizedImage", "resizedImage.jpg"));
     }
     else {
-        res.sendFile(path.resolve(image.image_file_location));
+        const originalImage = path.resolve(path.normalize(image.image_file_location));
+        
+        res.sendFile(fixPath(path.normalize(originalImage)));
     }
 }
 
@@ -68,6 +79,10 @@ const getImage = async (req, res) => {
 // }
 
 const uploadNewImage = (req, res) => {
+    let data = {
+        images: require('../model/imageLocations.json'),
+        setImages: function (data) { this.images = data }
+    }
     console.log("Reaching point 2");
     const newImage = {
         id: data.images[data.employees.length -1].id + 1 || 1,
