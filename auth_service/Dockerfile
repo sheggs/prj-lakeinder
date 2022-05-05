@@ -1,12 +1,17 @@
-# syntax=docker/dockerfile:1
-FROM python:3
+FROM python:3.8.3-slim
 
 WORKDIR /code
+
+COPY wait-for-it.sh /code
+COPY wait-for-it.sh ../
+COPY wait-for-it.sh ./
 
 RUN apt-get update
 RUN apt-get install -y postgresql-client
 
-COPY wait-for-it.sh .
+RUN apt-get install -y libpq-dev gcc
+RUN apt-get install -y bash
+RUN pip install psycopg2
 
 RUN chmod +x wait-for-it.sh
 

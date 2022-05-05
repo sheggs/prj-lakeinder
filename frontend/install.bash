@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ## Generate .env
 echo "REACT_APP_BACKEND_NAME=localhost:8000

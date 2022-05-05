@@ -13,7 +13,6 @@ module_dir = os.path.dirname(__file__)
 
 class WorldCitiesJSON(APIView):
     def get(self, request):
-        logging.error("Log message goes here.")
         f = open(os.path.join(module_dir,'data/worldcities.json'))
         j = json.load(f)
         return Response(j)

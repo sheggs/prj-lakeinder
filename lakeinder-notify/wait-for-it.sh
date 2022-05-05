@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # wait-for-postgres.sh
 
 set -e
