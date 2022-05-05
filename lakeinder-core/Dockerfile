@@ -1,21 +1,21 @@
-FROM node:18
-
-WORKDIR /code
-
-RUN apt-get update -y
-RUN apt-get install -y build-essential libpq-dev
+From node:16
+RUN apt-get update
 RUN apt-get install libpq-dev
 RUN apt-get install -y postgresql-client
 
-COPY package.json ./
-COPY package-lock.json ./
-COPY wait-for-it.sh .
+WORKDIR /code
+
+
+COPY package*.json ./
+COPY wait-for-it.sh /code
+
+RUN npm install --production --silent && mv node_modules ../
+
+
 
 RUN chmod +x wait-for-it.sh
 
-RUN npm install --silent
-
-COPY . . 
+COPY . .
 
 EXPOSE 6326
 

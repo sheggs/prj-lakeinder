@@ -12,7 +12,7 @@ services:
         container_name: frontend_container
         stdin_open: true
         tty: true
-
+        restart: always
     # Postgres DB
     # Portforwarded to the localhost in port 5433, runs in the container has port 5432
     # can run this on local machine to run access sql server... psql -h localhost -p 5433 -U postgres postgres
@@ -53,6 +53,7 @@ services:
             - ./fileservice:/code
         ports: 
             - 3500:3500
+        restart: always
     # Runs on basic node server.  using the wait-for-it.sh script
     # This script just loops until postgres is ready
     # Copies data to container and runs on port 6326 on local machine and container

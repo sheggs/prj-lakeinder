@@ -1,13 +1,12 @@
-FROM node:14
+From node:16
 
 WORKDIR /code
 
-COPY package.json ./
-COPY package-lock.json ./
 
-RUN npm install --silent
+COPY package*.json ./
+RUN npm install && mv node_modules ../
 
-COPY . . 
+COPY . .
 
 EXPOSE 3500
 

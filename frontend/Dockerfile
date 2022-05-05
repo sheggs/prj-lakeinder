@@ -1,15 +1,21 @@
-FROM node:13.12.0-alpine
+From node:16
+RUN apt-get update
+RUN apt-get install libpq-dev
+RUN apt-get install -y postgresql-client
 
 WORKDIR /code
 
 
-COPY package.json ./
-COPY package-lock.json ./
+COPY package*.json ./
 
-RUN npm install
+RUN npm install && mv node_modules ../
 
-COPY . . 
+
+
+
+COPY . .
 
 EXPOSE 3000
 
 CMD ["npm","start"]
+
