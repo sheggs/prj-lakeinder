@@ -16,6 +16,7 @@ RUN apk add postgresql-client
 RUN npm install --production --silent && mv node_modules ../
 
 RUN chmod +x wait-for-it.sh
+RUN sed -i -e 's/\r$//' wait-for-it.sh
 
 COPY . .
 

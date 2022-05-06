@@ -308,8 +308,6 @@ export default function RegisterModal(props) {
                 fData.append("tags", tags[i])
 
             }
-        }else{
-            fData.append("tags")
         }
         fData.append("country", country)
         fData.append("city", city)

@@ -2,6 +2,10 @@
 ```
 docker-compose up
 ```
+# How to fix bash run errors?
+```
+Use the start-up.bash script provided
+```
 # To run a no docker version
 ```
 git checkout -b no_docker

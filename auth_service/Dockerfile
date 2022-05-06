@@ -18,6 +18,7 @@ RUN chmod +x wait-for-it.sh
 COPY requirements.txt .
 
 RUN pip install -r requirements.txt
+RUN sed -i -e 's/\r$//' wait-for-it.sh
 
 COPY . .
 

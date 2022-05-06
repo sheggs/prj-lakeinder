@@ -62,12 +62,14 @@ class Register(APIView):
         logging.debug(data)
         logging.debug(request.data)
         data["sex"] = int(data["sex"])
-        tags = data["tags"]
-        
-        tags = remove_duplicates(tags)
+        tags = None
+        if data["tags"] is not None:
+            tags = data["tags"]
+            
+            tags = remove_duplicates(tags)
 
 
-        del request.data["tags"]
+            del request.data["tags"]
 
         '''
             @TODO
@@ -93,16 +95,16 @@ class Register(APIView):
 
         user_id = serializer.data["id"]
 
-
-        for i in tags:
-            data = {
-                "user": user_id,
-                "tag": i
-            }
-            logging.debug(data)
-            tagSerializer = TagsSerializer(data=data)
-            tagSerializer.is_valid(raise_exception=True)
-            tagSerializer.save()
+        if tags is not None:
+            for i in tags:
+                data = {
+                    "user": user_id,
+                    "tag": i
+                }
+                logging.debug(data)
+                tagSerializer = TagsSerializer(data=data)
+                tagSerializer.is_valid(raise_exception=True)
+                tagSerializer.save()
 
         return Response(serializer.data)
 
