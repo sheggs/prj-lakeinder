@@ -167,7 +167,21 @@ export default function Dashboard(props) {
     //   });
     // };
     if(socket != undefined){
-      socket.on('global_message_update', async (message) => { /** Recieved a message */ console.log("?global_message_update?"); await getMessages()});
+      socket.on('global_message_update', async (message) => { /** Recieved a message */ await getMessages()});
+      socket.on('global_match_update', async (message) => { /** Recieved a message */ 
+        if(myData != undefined){
+          let id = myData.id
+          for(let i in message["ids"]){
+            if(message["ids"][i] == id){
+              snackBar("You have a new match!", "info");
+              await getMessages()
+            }
+          }
+        }
+        console.log("MY DATA")
+        console.log(myData)
+
+      });
       socket.on('auth_message_failed', async (message) => { /** Recieved a message */ snackBar("Socket.io Auth Failed", "error")});
 
       // socket.on('deleteMessage', deleteMessageListener);
@@ -182,7 +196,7 @@ export default function Dashboard(props) {
       }
 
     };
-  }, [socket]);
+  }, [socket, myData]);
   const [messageRoom, setMessageRoom] = useState()
   const getMessages = () => {
     lakeinder_core_axios.get("profile/matches", { headers: { Authorization: accessToken } }).then((resp) => {

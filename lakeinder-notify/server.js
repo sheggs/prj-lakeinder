@@ -77,8 +77,10 @@ app.post('/message', authware, (req, res) => {
   console.log("hey")
 })
 
-app.post('/notify-match', (req, res) => {
-  console.log(req.body)
+app.post('/sendNotification', (req, res) => {
+  console.log(req)
+  socketIO.sockets.emit("global_match_update", {"ids" :req.body.ids})
+  res.send()
 })
 
 // Starting the Server

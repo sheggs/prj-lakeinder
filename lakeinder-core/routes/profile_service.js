@@ -5,7 +5,7 @@ const authware = require('../middleware/authware')
 const jwt = require('jsonwebtoken')
 const fs = require('fs')
 const { Pool, Client } = require('pg');
-
+const axios = require('axios')
 const client = new Client({
     user: 'postgres',
     host: 'db',
@@ -105,6 +105,14 @@ router.post('/match', authware, async(req,res,next) => {
                         })
                     }else{
                         // Allow match.
+                        axios.post('http://lakeindernotify:6584/sendNotification', {"type": "match", "ids":[initator_id, target_id]}).then((r) => {
+                            //Ignore
+                            console.log("REPONSE")
+                            console.log(r)
+                        }).catch((e) => {
+                            console.log("ERROR")
+                            console.log(e)
+                        })
                         // TODO: NOTIFICATION
                         client.query('INSERT INTO matches (initiator, target, match)  VALUES (' + initator_id + ", " + target_id + ", " + match + ")" ).then(() => {
                             // Create chat_room

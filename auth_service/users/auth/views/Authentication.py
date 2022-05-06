@@ -41,11 +41,11 @@ class Register(APIView):
 
         # pop data...
         # Extra Required Fields. Not including user fields...
-        resp, code = requiredFields(["tags"], request.data)
+        # resp, code = requiredFields(["tags"], request.data)
 
 
-        if(resp):
-            return Response(resp, status=code)
+        # if(resp):
+        #     return Response(resp, status=code)
 
         image1 = LakeFH.fileUpload(request.data["image1"],request.data["image1"].file)
         image2 = LakeFH.fileUpload(request.data["image2"],request.data["image2"].file)
@@ -63,13 +63,17 @@ class Register(APIView):
         logging.debug(request.data)
         data["sex"] = int(data["sex"])
         tags = None
-        if data["tags"] is not None:
-            tags = data["tags"]
-            
-            tags = remove_duplicates(tags)
+        try:
+            if data["tags"] is not None:
+                tags = data["tags"]
+                
+                tags = remove_duplicates(tags)
 
 
-            del request.data["tags"]
+                del request.data["tags"]
+        except:
+            pass
+
 
         '''
             @TODO
