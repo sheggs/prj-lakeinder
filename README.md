@@ -1,5 +1,6 @@
 # How you should run this
 ```
+bash start-up.bash
 docker-compose up
 ```
 # How to fix bash run errors?
