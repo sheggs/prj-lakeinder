@@ -1,3 +1,4 @@
 # https://www.robotstxt.org/robotstxt.html
+# I am a robot beep boop
 User-agent: *
 Disallow:
