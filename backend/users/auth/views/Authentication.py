@@ -19,12 +19,6 @@ import json
 import logging
 logging.basicConfig(level=logging.NOTSET) # Here
 
-
-# Create your views here.
-
-#header = request.META['HTTP_AUTHORIZATION']
-#user_id = decodeRefreshToken(header)["id"]
-
 '''
     How to validate the user is logged in.
     header = request.META['HTTP_AUTHORIZATION']
